@@ -1,0 +1,60 @@
+<HTML>
+<TITLE>Subtract Binary Coded Decimal with extend</TITLE>
+<H1>Subtract Binary Coded Decimal with extend</H1>
+<pre>
+<B>NAME</B>
+	SBCD -- Subtract binary coded decimal with extend
+
+<B>SYNOPSIS</B>
+	SBCD	Dy,Dx
+	SBCD	-(Ay),-(Ax)
+
+	Size = (Byte)
+
+<B>FUNCTION</B>
+	Subtracts the source operand to the destination operand along with
+	the extend bit, and stores the result in the destination location.
+        The subtraction is performed using binary coded decimal arithmetic.
+        The operands, which are packed BCD numbers, can be addressed in two
+        different ways:
+
+	1. Data register to data register: The operands are contained in the
+	   data registers specified in the instruction.
+
+	2. Memory to memory: The operands are addressed with the predecrement
+	   addressing mode using the address registers specified in the
+	   instruction.
+
+	Normally the Z condition code bit is set via programming before the
+	start of an operation. That allows successful tests for zero results
+	upon completion of multiple-precision operations.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|---|---|---|---|---|---|-----------|
+	| 1 | 0 | 0 | 0 |Ry REGISTER| 1 | 0 | 0 | 0 | 0 |R/M|Rx REGISTER|
+	-----------------------------------------------------------------
+
+	Ry specifies destination register.
+	Rx specifies source register.
+	If R/M = 0: Rx and Ry are datas registers.
+	If R/M = 1: Rx and Ry are address registers used  for the pre-
+	decrementing.
+
+<B>RESULT</B>
+	X - Set the same as the carry bit.
+	N - Undefined
+	Z - Cleared if the result is non-zero. Unchanged otherwise.
+	V - Undefined
+	C - Set if a decimal carry was generated. Cleared otherwise.
+
+<B>SEE ALSO</B>
+	<a href="sub.HTML">SUB </a> <a href="addi.HTML">ADDI</a> <a href="addq.HTML">ADDQ</a>
+	<a href="addx.HTML">ADDX</a>
+	<a href="add.HTML">ADD </a> <a href="subi.HTML">SUBI</a> <a href="subq.HTML">SUBQ</a>
+	<a href="abcd.HTML">ABCD</a> <a href="subx.HTML">SUBX</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: sbcd.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:12 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

@@ -1,0 +1,38 @@
+<HTML>
+<TITLE>Exclusive OR immediated with SR (PRIVILEGED)</TITLE>
+<H1>Exclusive OR immediated with SR (PRIVILEGED)</H1>
+<pre>
+<B>NAME</B>
+	EORI to SR -- Exclusive OR immediated to the status register (PRIVILEGED)
+
+<B>SYNOPSIS</B>
+	EORI	#&lt;data&gt;,SR
+
+	Size = (Word)
+
+<B>FUNCTION</B>
+	Performs an exclusive OR operation on the status register
+	with the source operand.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+	| 0 | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 |
+	|---------------------------------------------------------------|
+	|                     16 BITS IMMEDIATE DATA                    |
+	-----------------------------------------------------------------
+
+<B>RESULT</B>
+	X - Changed if bit 4 of the source is set, cleared otherwise.
+	N - Changed if bit 3 of the source is set, cleared otherwise.
+	Z - Changed if bit 2 of the source is set, cleared otherwise.
+	V - Changed if bit 1 of the source is set, cleared otherwise.
+	C - Changed if bit 0 of the source is set, cleared otherwise.
+	
+<B>SEE ALSO</B>
+	<a href="eor.HTML">EOR </a> <a href="eori.HTML">EORI</a> <a href="eoriccr.HTML">EORI to CCR</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: eorisr.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:08 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

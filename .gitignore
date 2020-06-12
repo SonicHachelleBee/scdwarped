@@ -1,0 +1,11 @@
+SonLVL INI Files/dllcache
+SonLVL INI Files/SonLVL.log
+*~
+scd.h
+scd.p
+scd.lst
+scd.log
+scd.map
+scdbuilt*.bin
+scdbuilt*.cue
+bin/

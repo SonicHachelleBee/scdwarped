@@ -1,0 +1,43 @@
+<HTML>
+<TITLE>Negate Binary Coded Decimal with extend</TITLE>
+<H1>Negate Binary Coded Decimal with extend</H1>
+<pre>
+<B>NAME</B>
+	NBCD -- Negate binary coded decimal with extend
+
+<B>SYNOPSIS</B>
+	NBCD	&lt;ea&gt;
+
+	Size = (Byte)
+
+<B>FUNCTION</B>
+	The specified BCD number and the extend bit are subtracted
+	from zero. Therefore, if the extend bit is set a nines
+	complement is performed, else a tens complement is performed.
+	The result is placed back in the specified &lt;ea&gt;.
+
+	It can be useful to set the zero flag before performing
+	this operation so that multi precision operations can
+	be correctly tested for zero.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|-----------|-----------|
+	| 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |    MODE   | REGISTER  |
+	----------------------------------------=========================
+	                                                   &lt;ea&gt;
+
+<B>RESULT</B>
+	X - Set the same as the carry bit.
+	N - Undefined.
+	Z - Cleared it the result is non-zero, unchanged otherwise.
+	V - Undefined.
+	C - Set if a borrow was generated, cleared otherwise.
+
+<B>SEE ALSO</B>
+	<a href="neg.HTML">NEG</a> <a href="negx.HTML">NEGX</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: nbcd.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:10 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

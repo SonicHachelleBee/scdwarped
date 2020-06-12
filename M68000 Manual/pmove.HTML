@@ -1,0 +1,119 @@
+<HTML>
+<TITLE>MOVE from or to PMMU registers (PRIVILEGED)</TITLE>
+<H1>MOVE from or to PMMU registers (PRIVILEGED)</H1>
+<pre>
+<B>NAME</B>
+	PMOVE -- Move from or to PMMU registers (PRIVILEGED)
+
+<B>SYNOPSIS</B>
+	PMOVE	MMU-reg,&lt;ea&gt;
+	PMOVE	&lt;ea&gt;,MMU-reg
+	PMOVEFD	&lt;ea&gt;,MMU-reg
+	
+	Size = (Word, Long, Quad).
+
+<B>FUNCTION</B>
+	This instruction is used to read or write PMMU registers.
+	Transfert on CRP or SRP is for a Quadruple word (64 bits), TC, TT0,
+	TT1 one's is for a Long word, and MMUSR one's is for a Word.
+
+	PMOVEFD instruction does a move with invalidation or not  of PMMU
+	cache. If FD bit is set in the instruction, the ATC isn't invalidated;
+	if FD bit is cleared, ATC is invalidated.
+
+	If value loaded in CRP or SRP follows to a not valid descriptor,
+	the value is loaded but an exception of configuration error of PMMU
+	is generated.
+
+	For the TC register, a checking  on fields PS, IS, and TIx is made;
+	if there's error on the total of mentioned bits, operand is loaded
+	but an exception of configuration error of PMMU is generated.
+
+	MMUSR isn't affected by those transferts, else it is placed in
+	destination!!
+
+<B>FORMAT</B>
+	For CRP, SRP, TC registers:
+	~~~~~~~~~~~~~~~~~~~~~~~~~~
+	PMMU-reg field specifies PMMU register:
+	000-&gt;TC
+	010-&gt;SRP
+	011-&gt;CRP
+                                                          &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|-----------|-----------|
+	| 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |    MODE   | REGISTER  |
+	|---|---|---|-----------|---|---|---|---|-----------------------|
+	| 0 | 1 | 0 |  MMU-reg  |R/W|FD | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+	-----------------------------------------------------------------
+
+	For TT0, TT1, registers:
+        ~~~~~~~~~~~~~~~~~~~~~~~
+	PMMU-reg field specifies PMMU register:
+	010-&gt;TT0
+	011-&gt;TT1
+
+	FD bit: allows or not ATC invalidation:
+	0-&gt;ATC invalidated.
+	1-&gt;ATC NOT invalidated.
+
+                                                          &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|-----------|-----------|
+	| 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |    MODE   | REGISTER  |
+	|---|---|---|-----------|---|---|---|---|-----------------------|
+	| 0 | 0 | 0 |  MMU-reg  |R/W|FD | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+	-----------------------------------------------------------------
+
+	For MMUSR register:
+	~~~~~~~~~~~~~~~~~~
+                                                         &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|-----------|-----------|
+	| 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |    MODE   | REGISTER  |
+	|---|---|---|---|---|---|---|---|---|---|-----------------------|
+	| 0 | 1 | 1 | 0 | 0 | 0 |R/W| 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+	-----------------------------------------------------------------
+
+	R/W field indicates type of access used for research:
+	0-&gt;Memory to PMMU register.
+	1-&gt;PMMU register to memory.
+
+<B>REGISTER</B>
+	&lt;ea&gt; specifies memory address, allowed addressing modes are:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       | -  |    -     | |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |    -     | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     | -  |    -     | |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      | -  |    -     | |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	Not affected.
+
+<B>SEE ALSO</B>
+	<a href="ptest.HTML">PTEST</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: pmove.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:11 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

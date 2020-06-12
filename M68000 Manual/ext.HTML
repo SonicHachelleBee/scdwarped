@@ -1,0 +1,48 @@
+<HTML>
+<TITLE>Sign EXTend</TITLE>
+<H1>Sign EXTend</H1>
+<pre>
+<B>NAME</B>
+	EXT, EXTB -- Sign extend
+
+<B>SYNOPSIS</B>
+	EXT.W	Dn	Extend byte to word
+	EXT.L	Dn	Extend word to long word
+	EXTB.L	Dn	Extend byte to long word	(68020+)
+
+	Size = (Word, Long)
+
+<B>FUNCTION</B>
+	Extends a byte to a word, or a word to a long word in a data
+	register by copying the sign bit through the upper bits. If the
+	operation is from byte to word, bit 7 is copied to bits 8 through
+	15. If the operation is from word to long word, bit 15 is copied
+	to bits 16 through 31. The EXTB copies bit 7 to bits 8 through 31.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|-----------|---|---|---|-----------|
+	| 0 | 1 | 0 | 0 | 1 | 0 | 0 |  OP-MODE  | 0 | 0 | 0 | REGISTER  |
+	-----------------------------------------------------------------
+
+	"REGISTER" specifies a data register.
+
+<B>OP-MODE</B>
+	010-&gt;Extending from 8 bits to 16 bits.
+	011-&gt;Extending from 16 bits to 32 bits.
+	111-&gt;Extending from 8 bits to 32 bits.
+
+<B>RESULT</B>
+	X - Not affected
+	N - Set if the result is negative. Cleared otherwise.
+	Z - Set if the result is zero. Cleared otherwise.
+	V - Always cleared
+	C - Always cleared
+
+<B>SEE ALSO</B>
+	<a href="bfexts.HTML">BFEXTS</a>	<a href="bfextu.HTML">BFEXTU</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: ext.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:08 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

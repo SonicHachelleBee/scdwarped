@@ -1,0 +1,70 @@
+<HTML>
+<TITLE>CoMPare Address</TITLE>
+<H1>CoMPare Address</H1>
+<pre>
+<B>NAME</B>
+	CMPA -- Compare address
+
+<B>SYNOPSIS</B>
+	CMPA	&lt;ea&gt;,An
+
+	Size = (Word, Long)
+
+<B>FUNCTION</B>
+	Subtracts the source operand from the destination address
+	register and sets the condition codes according to the result. The
+	address register is NOT changed. Word sized source operands are
+	sign extended to long for comparison.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|-----------|-----------|-----------|
+	| 1 | 0 | 1 | 1 |  REGISTER |  OP-MODE  |    MODE   | REGISTER  |
+	----------------------------------------=========================
+	                                                  &lt;ea&gt;
+
+<B>OP-MODE</B>
+	011	16 bits operation.
+	111	32 bits operation.
+
+<B>REGISTER</B>
+	The address register specifies destination An.
+	&lt;ea&gt; specifies source operand, addressing modes allowed are:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       |000 |N° reg. Dn| |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       |001 |N° reg. An| |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    |111 |  010   |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      |111 |  100   |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	X - Not affected
+	N - Set if the result is negative. Cleared otherwise.
+	Z - Set if the result is zero. Cleared otherwise.
+	V - Set if an overflow occours. Cleared otherwise.
+	C - Set if a borrow occours. Cleared otherwise.
+
+<B>SEE ALSO</B>
+	<a href="cmp.HTML">CMP </a> <a href="cmpi.HTML">CMPI</a> <a href="cmp2.HTML">CMP2</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: cmpa.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:08 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

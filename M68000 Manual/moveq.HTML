@@ -1,0 +1,39 @@
+<HTML>
+<TITLE>MOVE signed 8-bit data Quick</TITLE>
+<H1>MOVE signed 8-bit data Quick</H1>
+<pre>
+<B>NAME</B>
+	MOVEQ -- Move signed 8-bit data quick
+
+<B>SYNOPSIS</B>
+	MOVEQ	#&lt;data:8&gt;,Dn
+
+	Size = (Long)
+
+<B>FUNCTION</B>
+	Move signed 8-bit data to the specified data register.
+	The specified data is sign extended to 32-bits before
+	it is moved to the register.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|---|-------------------------------|
+	| 0 | 1 | 1 | 1 | REGISTER  | 0 |        IMMEDIATE DATA         |
+	-----------------------------------------------------------------
+
+	"REGISTER" is one of the 8 datas registers. 
+
+<B>RESULT</B>
+	X - Not affected.
+	N - Set if the result is negative. Cleared otherwise.
+	Z - Set if the result is zero. Cleared otherwise.
+	V - Always cleared.
+	C - Always cleared.
+
+<B>SEE ALSO</B>
+	<a href="move.HTML">MOVE</a> 	<a href="movea.HTML">MOVEA</a>	<a href="lea.HTML">LEA</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: moveq.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:10 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

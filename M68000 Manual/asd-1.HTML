@@ -1,0 +1,117 @@
+<HTML>
+<TITLE>Arithmetic Shift Left and Arithmetic Shift Right</TITLE>
+<H1>Arithmetic Shift Left and Arithmetic Shift Right</H1>
+<pre>
+<B>NAME</B>
+	ASL, ASR -- Arithmetic shift left and arithmetic shift right
+
+<B>SYNOPSIS</B>
+	ASd	Dx,Dy
+	ASd	#&lt;data&gt;,Dy
+	ASd	&lt;ea&gt;
+	where <B>d</B> is direction, L or R
+
+	Size = (Byte, Word, Long)
+
+<B>FUNCTION</B>
+	Performs an arithmetic shifting bit operation in the indicated
+        direction, with an immediate data, or with a data register.
+        If you shift address contents, you only can do ONE shift, and
+        your operand is ONE word exclusively.
+
+	ASL:              &lt;--  
+	      C &lt;------ OPERAND &lt;--- 0
+	            |
+	            |
+	      X &lt;---'
+	       
+
+	ASR:      --&gt;
+	  .---&gt; OPERAND ------&gt; C
+          |    T          |
+	  |    |          |
+	  `----'          `---&gt; X
+
+<B>FORMAT</B>
+	In the case of the shifting of a register:
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|---|-------|---|---|---|-----------|
+	| 1 | 1 | 1 | 0 |  NUMBER/  |dr |  SIZE |i/r| 0 | 0 | REGISTER  |
+	|   |   |   |   |  REGISTER |   |       |   |   |   |           |
+	-----------------------------------------------------------------
+
+	In the case of the shifting of a memory area:
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|-----------|-----------|
+	| 1 | 1 | 1 | 0 | 0 | 0 | 0 |dr | 1 | 1 |    MODE   | REGISTER  |
+	----------------------------------------=========================
+	                                                  &lt;ea&gt;
+
+
+<B>NUMBER/REGISTER</B>
+	Specifies number of shifting or number of register which contents
+	the number of shifting.
+	If i/r = 0, number of shifting is specified in the instruction as
+	immediate data
+	If i/r = 1, it's specified in the data register.
+	If dr = 0, right shifting
+	If dr = 1, left shifting
+
+<B>SIZE</B>
+	00-&gt;one Byte operation
+	01-&gt;one Word operation
+	10-&gt;one Long operation
+
+<B>REGISTER</B>
+	For a register shifting:
+	Indicates the number of data register on which shifting is applied.
+
+	For a memory shifting:
+	&lt;ea&gt; indicates operand which should be shifted.
+	Only addressing modes relatives to memory are allowed:
+
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       | -  |     -    | |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |     -    | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    | 
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	X - Set according to the list bit shifted out of the operand.
+	    Unaffected for a shift count of zero.
+	N - Set if the most-significant bit of the result is set. Cleared
+	    otherwise.
+	Z - Set if the result is zero. Cleared otherwise.
+	V - Set if the most significant bit is changed at any time during
+	    the shift operation. Cleared otherwise.
+	C - Set according to the list bit shifted out of the operand.
+	    Cleared for a shift count of zero.
+
+<B>SEE ALSO</B>
+	<a href="rod.HTML">ROd </a> <a href="roxd.HTML">ROXd</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: asd.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:06 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

@@ -1,0 +1,85 @@
+<HTML>
+<TITLE>Create local stack frame</TITLE>
+<H1>Create local stack frame</H1>
+<pre>
+<B>NAME</B>
+	LINK -- Create local stack frame
+
+<B>SYNOPSIS</B>
+	LINK	An,#&lt;data&gt;
+
+	Size = (Word)
+	Size = (Word, Long)		(68020+)
+
+<B>FUNCTION</B>
+	This instruction saves the specified address register onto
+	the stack, then places the new stack pointer in that register. It
+	then adds the specificed immediate data to the stack pointer. To
+	allocate space on the stack for a local data area, a negative value
+	should be used for the second operand.
+
+	The use of a local stack frame is critically important to the
+	programmer who wishes to write re-entrant or recursive functions.
+	The creation of a local stack frame on the MC680x0 family is done
+	through the use of the LINK and UNLK instructions. The LINK
+	instruction saves the frame pointer onto the stack, and places a
+	pointer to the new stack frame in it. The UNLK instruction
+	restores the old stack frame. For example:
+
+		link	a5,#-8		; a5 is chosen to be the frame
+					; pointer. 8 bytes of local stack
+					; frame are allocated.
+		...
+		unlk	a5		; a5, the old frame pointer, and the
+					; old SP are restored.
+
+	Since the LINK and UNLK instructions maintain both the frame pointer
+	and the stack pointer, the following code segment is perfectly
+	legal:
+
+		link	a5,#-4
+
+		movem.l	d0-a4,-(sp)
+		pea	(500).w
+		move.l	d2,-(sp)
+		bsr.b	Routine
+
+		unlk	a5
+		rts
+
+<B>FORMAT</B>
+	For Word size:
+	~~~~~~~~~~~~~
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|---|---|---|-----------|
+	| 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | REGISTER  |
+	|---------------------------------------------------------------|
+	|                        16 BITS OFFSET (d)                     |
+	-----------------------------------------------------------------
+
+	For Long size:
+	~~~~~~~~~~~~~
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|---|---|---|-----------|
+	| 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | REGISTER  |
+	|---------------------------------------------------------------|
+	|          32 BITS OFFSET (d) (16 bits of lower weight)         |
+	|---------------------------------------------------------------|
+	|          32 BITS OFFSET (d) (16 bits of upper weight)         |
+	-----------------------------------------------------------------
+
+	"REGISTER" indicates the number of address register.
+	OFFSET is a signed value, generally negative, which enables to move
+	the stack pointer.
+
+<B>RESULT</B>
+	None.
+
+<B>SEE ALSO</B>
+	<a href="unlk.HTML">UNLK</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: link.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:09 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

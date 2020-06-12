@@ -1,0 +1,42 @@
+<HTML>
+<TITLE>Branch to SubRoutine</TITLE>
+<H1>Branch to SubRoutine</H1>
+<pre>
+<B>NAME</B>
+	BSR -- Branch to subroutine
+
+<B>SYNOPSIS</B>
+	BSR	&lt;label&gt;
+
+	Size = (Byte, Word)
+	Size = (Byte, Word, Long)	(68020+)
+
+<B>FUNCTION</B>
+	Pushes the long word address which follows the BSR instruction to
+	stack.
+	Program	execution continues at location (PC) + offset.
+	Offset is the relative gap between PC value and label.
+	This gap is calculated by complement to two and is coded on 8 bits
+	or on 16 bits.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|-------------------------------|
+	| 0 | 1 | 1 | 0 | 0 | 0 | 0 | 1 |         8 BITS OFFSET         |
+	|---------------------------------------------------------------|
+	|            16 BITS OFFSET, IF 8 BITS OFFSET = $00             |
+	|---------------------------------------------------------------|
+	|            32 BITS OFFSET, IF 8 BITS OFFSET = $FF             |
+	-----------------------------------------------------------------
+
+<B>RESULT</B>
+	None.
+
+<B>SEE ALSO</B>
+	<a href="jsr.HTML">JSR</a> <a href="bra.HTML">BRA</a>
+	<a href="rts.HTML">RTS</a> <a href="rts.HTML">RTD</a> <a href="rts.HTML">RTR</a> 
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: bsr.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:07 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

@@ -1,0 +1,58 @@
+<HTML>
+<TITLE>Exception generation on CoProcessor condition</TITLE>
+<H1>Exception generation on CoProcessor condition</H1>
+<pre>
+<B>NAME</B>
+	cpTRAPcc -- Exception generation on coprocessor condition
+
+<B>SYNOPSIS</B>
+	cpTRAPcc
+	cpTRAPcc	#&lt;data&gt;
+
+	No size specs, or size of data: (Word, Long).
+
+<B>FUNCTION</B>
+	If specified coprocessor condition is true, exception vector n°7
+	is generated. Value of saved PC is next instruction one (return
+	address).
+	If given condition is false, PC takes the value of next instruction.
+	Immediate data placed at instruction end is an information which can
+	be used by the exception sub-routine.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|---|---|---|---|---|---|-----------|
+	| 1 | 1 | 1 | 1 | CP-ID =! 0| 0 | 0 | 1 | 1 | 1 | 1 |  OP-MODE  |
+	|---|---|---|---|-----------|---|---|---|-----------------------|
+	| 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |COPROSSESSOR CONDITION |
+	|---------------------------------------------------------------|
+	|              OPTIONAL COPROCESSOR EXTENSION WORD              |
+	|---------------------------------------------------------------|
+	|                            16 BITS DATA or                    |
+	|---------------------------------------------------------------|
+	|	          32 BITS DATA (LOW WEIGHT PART)                |
+	-----------------------------------------------------------------
+
+<B>OP-MODE</B>
+	010-&gt;instruction contains a 16 bits operand.
+	011-&gt;instruction contains a 32 bits operand.
+	100-&gt;instruction has no operands.
+
+	CP-ID field identify coprocessor (1 to 7). If CP-ID=0,
+	"line emulation F" exception is generated.
+
+	"COPROSSESSOR CONDITION" field, specifies condition to test.
+	This condition is addressed to coprocessor which, after examining
+	this one, address directives to processor in order to execute
+	the instruction.
+
+<B>RESULT</B>
+	Not affected.
+
+<B>SEE ALSO</B>
+	<a href="cpdbcc.HTML">cpDBcc</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: cptrapcc.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:08 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

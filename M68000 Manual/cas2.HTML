@@ -1,0 +1,105 @@
+<HTML>
+<TITLE>Compare And Swap (two-operand)</TITLE>
+<H1>Compare And Swap (two-operand)</H1>
+<pre>
+<B>NAME</B>
+	CAS2 --Compare and swap (two-operand)	(68020+)
+
+<B>SYNOPSIS</B>
+	CAS2	Dc1:Dc2,Du1:Du2,(Rn1):(Rn2)
+
+	Size = (Word, Long)
+
+<B>FUNCTION</B>
+	This instruction is a read-modify-write instruction and should
+	NEVER be used on Amiga because of conflicts with customs chips
+	Destination operand 1, which is in memory to specified address by
+	(Rn1), is compared to data register Dc1. If there's equality (Z=1),
+	destination operand 2, which is in memory to specified address by
+	(Rn2), is compared to data register Dc2.
+
+	If there's equality (Z=1), destination operand 1 can be updated, i.e.
+	new operand Du1 (Data Update) is moved in destination (Rn1).
+
+	And also, destination operand 2 can be updated, i.e. new operand Du2
+	(Data Update) is moved in destination (Rn2).
+
+	If there's no equality (Z=0), reference registers Dc1 and Dc2 have to
+	be updated. So there's move from destination operand (Rn1) in Dc1, and
+	from (Rn2) in Dc2.
+
+<B>FORMAT</B>
+                                                          &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|-------|---|---|---|-----------|-----------|
+	| 0 | 0 | 0 | 0 | 1 | SIZE  | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 |
+	|---|-----------|-----------|-----------|-----------|-----------|
+	|D/A|    Rn1    | 0 | 0 | 0 |  Du1 Reg. | 0 | 0 | 0 |  Dc1 Reg. |
+	|---|-----------|-----------|-----------|-----------|-----------|
+	|D/A|    Rn2    | 0 | 0 | 0 |  Du2 Reg. | 0 | 0 | 0 |  Dc2 Reg. |
+	-----------------------------------------------------------------
+
+<B>SIZE</B>
+	10-&gt;one Word operation
+	11-&gt;one Long operation
+
+<B>REGISTER</B>
+	D/A fields - Specify whether Rn1 and Rn2 reference data or address 
+	registers, respectively.
+	0 - The corresponding register is a data register.
+	1 - The corresponding register is an address register.
+	
+	Rn1, Rn2 fields - Specify the number of the registers that contain
+	the addresses of the first and the second memory operand,
+	respectively. If the operands overlap in memory, the results of
+	any memory update are undefined.
+	
+	Du1, Du2 fields - Specify the data registers that contain the update
+	vaules to be written to the first and second memory operand locations 
+	if the comparison is successful.
+
+	Dc1, Dc2 fields - Specify the data registers that contain the test
+	vaules to be compared to the first and second memory operands,
+	respectively. If Dc1 and Dc2 specify the same register and the
+	comparison fails, memory operand 1 is stored in the data register.
+
+
+	&lt;ea&gt; is always destination, addressing modes are the followings:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       | -  |     -    | |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |     -    | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	X - Not affected
+	N - Set if the result of the comparison is negative. Cleared otherwise.
+	Z - Set if the result of the comparison is zero. Cleared otherwise.
+	V - Set if an overflow occours. Cleared otherwise.
+	C - Set if a borrow occours. Cleared otherwise.
+
+<B>SEE ALSO</B>
+	<a href="cas.HTML">CAS</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: cas2.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:07 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

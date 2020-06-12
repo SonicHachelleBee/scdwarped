@@ -1,0 +1,88 @@
+<HTML>
+<TITLE>Bit CLeaR</TITLE>
+<H1>Bit CLeaR</H1>
+<pre>
+<B>NAME</B>
+	BCLR -- Bit clear
+
+<B>SYNOPSIS</B>
+	BCLR	Dn,&lt;ea&gt;
+	BCLR	#&lt;data&gt;,&lt;ea&gt;
+
+	Size = (Byte, Long)
+
+<B>FUNCTION</B>
+	Tests a bit in the destination operand and sets the Z
+	condition code appropriately, then clears the bit in the destination.
+	If the destination is a data register, any of the 32 bits can be
+	specifice by the modulo 32 number. When the distination is a memory
+	location, the operation must be a byte operation, and therefore the
+	bit number is modulo 8. In all cases, bit zero is the least
+	significant bit. The bit number for this operation may be specified
+	in either of two ways:
+
+	1. Immediate -- The bit number is specified as immediate data.
+	2. Register  -- The specified data register contains the bit number.
+
+<B>FORMAT</B>
+	In the case of BCLR Dn,&lt;ea&gt;:
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|---|---|---|-----------|-----------|
+	| 0 | 0 | 0 | 0 |  REGISTER | 1 | 1 | 0 |    MODE   | REGISTER  |
+	----------------------------------------=========================
+	                                                  &lt;ea&gt;
+
+	In the case of BCLR #&lt;data,&lt;ea&gt;:
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	                                                  &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|-----------|-----------|
+	| 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 1 | 0 |    MODE   | REGISTER  |
+	|---|---|---|---|---|---|---|---|-------------------------------|
+	| 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |       NUMBER OF THE BIT       |
+	-----------------------------------------------------------------
+
+<B>REGISTER</B>
+	&lt;ea&gt; is always destination, addressing modes are the followings:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn *     |000 |N° reg. Dn| |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |     -    | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    | 
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+	 * Long only; for others modes: Byte only.
+
+<B>RESULT</B>
+	X - not affected
+	N - not affected
+	Z - Set if the bit tested is zero. Cleared otherwise.
+	V - not affected
+	C - not affected
+
+<B>SEE ALSO</B>
+	<a href="bchg.HTML">BCHG </a> <a href="bset.HTML">BSET </a> <a href="btst.HTML">BTST </a>
+	<a href="and.HTML">AND  </a> <a href="bfclr.HTML">BFCLR</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: bclr.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:07 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

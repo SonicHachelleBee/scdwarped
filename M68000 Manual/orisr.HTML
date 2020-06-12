@@ -1,0 +1,39 @@
+<HTML>
+<TITLE>Logical OR immediated to SR (PRIVILEGED)</TITLE>
+<H1>Logical OR immediated to SR (PRIVILEGED)</H1>
+<pre>
+<B>NAME</B>
+	ORI to SR -- Logical OR immediated to the status register (PRIVILEGED)
+
+<B>SYNOPSIS</B>
+	ORI	#&lt;data&gt;,SR
+
+	Size = (Word)
+
+<B>FUNCTION</B>
+	Performs an OR operation on the status register with
+	the source operand, and leaves the result in the status
+	register.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+	| 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 |
+	|---|---|---|---|---|---|---|---|-------------------------------|
+	|                     16 BITS IMMEDIATE DATA                    |
+	-----------------------------------------------------------------
+
+<B>RESULT</B>
+	X - Set if bit 4 of the source is set, cleared otherwise.
+	N - Set if bit 3 of the source is set, cleared otherwise.
+	Z - Set if bit 2 of the source is set, cleared otherwise.
+	V - Set if bit 1 of the source is set, cleared otherwise.
+	C - Set if bit 0 of the source is set, cleared otherwise.
+	
+<B>SEE ALSO</B>
+	<a href="or.HTML">OR </a> <a href="eori.HTML">ORI</a> <a href="oriccr.HTML">ORI to CCR</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: orisr.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:11 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

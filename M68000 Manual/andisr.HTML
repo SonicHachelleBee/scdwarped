@@ -1,0 +1,39 @@
+<HTML>
+<TITLE>Logical AND Immediate to SR (privileged)</TITLE>
+<H1>Logical AND Immediate to SR (privileged)</H1>
+<pre>
+<B>NAME</B>
+	ANDI to SR -- Logical AND immediate to status register (privileged)
+
+<B>SYNOPSIS</B>
+	ANDI	#&lt;data&gt;,SR
+
+	Size = (Word)
+
+<B>FUNCTION</B>
+	Performs a bit-wise AND operation with the immediate data and
+	the status register. All implemented bits of the status register are
+	affected.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+	| 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 1 | 1 | 1 | 1 | 1 | 0 | 0 |
+	|---------------------------------------------------------------|
+	|                     16 BITS IMMEDIATE DATA                    |
+	-----------------------------------------------------------------
+
+<B>RESULT</B>
+	X - Cleared if bit 4 of immed. operand is zero. Unchanged otherwise.
+	N - Cleared if bit 3 of immed. operand is zero. Unchanged otherwise.
+	Z - Cleared if bit 2 of immed. operand is zero. Unchanged otherwise.
+	V - Cleared if bit 1 of immed. operand is zero. Unchanged otherwise.
+	C - Cleared if bit 0 of immed. operand is zero. Unchanged otherwise.
+
+<B>SEE ALSO</B>
+	<a href="and.HTML">AND </a> <a href="andi.HTML">ANDI</a> <a href="andiccr.HTML">ANDI to CCR</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: andisr.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:06 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

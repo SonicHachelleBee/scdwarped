@@ -1,0 +1,66 @@
+<HTML>
+<TITLE>Test And Set operand</TITLE>
+<H1>Test And Set operand</H1>
+<pre>
+<B>NAME</B>
+	TAS -- Test and set operand
+
+<B>SYNOPSIS</B>
+	TAS	&lt;ea&gt;
+
+	Size = (Byte)
+
+<B>FUNCTION</B>
+	Test of a byte addressed by &lt;ea&gt;, bits N and Z of SR are set
+	according to result of test.
+	Bit 7 of byte is set to 1. This instruction uses read-modify-write
+	cycle, which is not dividable and allows synchronisation of several
+	processors. But this instruction is NOT ALLOWED ON AMIGA!
+	This instruction can easily be substituted by BSET.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|-----------|-----------|
+	| 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1 |    MODE   | REGISTER  |
+	----------------------------------------=========================
+	                                                   &lt;ea&gt;
+
+<B>REGISTER</B>
+	&lt;ea&gt; is destination, addressing modes are the followings:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       |000 |N° reg. Dn| |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |     -    | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	X - Not affected.
+	N - Set if MSB of byte is set. Cleared otherwise.
+	Z - Set if byte is zero. Cleared otherwise.
+	V - Always cleared.
+	C - Always cleared.
+
+<B>SEE ALSO</B>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: tas.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:12 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

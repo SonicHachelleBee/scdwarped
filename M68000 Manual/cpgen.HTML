@@ -1,0 +1,48 @@
+<HTML>
+<TITLE>GENeral CoProcessor intruction</TITLE>
+<H1>GENeral CoProcessor intruction</H1>
+<pre>
+<B>NAME</B>
+	cpGEN -- General coprocessor intruction
+
+<B>SYNOPSIS</B>
+	cpGEN	&lt;coprocessor defined parameters&gt;
+
+	No size specs.
+
+<B>FUNCTION</B>
+	Command word specified is addressed to selected coprocessor.
+	This one decode the command and address requests services to processor
+	in order to execute services asked by the coprocessor.
+
+<B>FORMAT</B>
+                                                           &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|---|---|---|-----------|-----------|
+	| 1 | 1 | 1 | 1 | CP-ID =! 0| 0 | 0 | 0 |    MODE   | REGISTER  |
+	|---------------------------------------------------------------|
+	|                  COPROCESSOR COMMAND WORD                     |
+	|---------------------------------------------------------------|
+	|     OPTIONAL COPROCESSOR EXTENSION WORD or OPTIONAL &lt;ea&gt;      |
+	-----------------------------------------------------------------
+
+	CP-ID field identify coprocessor (1 to 7). If CP-ID=0,
+	"line emulation F" exception is generated.
+
+	&lt;ea&gt; field specifies place of operand not resident in the coprocessor.
+	Allowed addressing modes are driven by the type of operation made.
+
+	"COPROCESSOR COMMAND" field specifies operation to do.
+	This word is transmit to coprocessor which, after analyse of this
+	word, send directives to coprocessor in order to execute instruction.
+	
+<B>RESULT</B>
+	Not affected or modified by the coprocessor.
+
+<B>SEE ALSO</B>
+	<a href="cpbcc.HTML">cpBcc</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: cpgen.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:08 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

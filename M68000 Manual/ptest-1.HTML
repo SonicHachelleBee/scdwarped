@@ -1,0 +1,144 @@
+<HTML>
+<TITLE>TESTs a logic address (PRIVILEGED)</TITLE>
+<H1>TESTs a logic address (PRIVILEGED)</H1>
+<pre>
+<B>NAME</B>
+	PTEST -- TESTs a logic address (PRIVILEGED)
+
+<B>SYNOPSIS</B>
+	PTESTR	&lt;FC&gt;,&lt;ea&gt;,#&lt;level&gt;
+	PTESTR	&lt;FC&gt;,&lt;ea&gt;,#&lt;level&gt;,An
+	PTESTW	&lt;FC&gt;,&lt;ea&gt;,#&lt;level&gt;
+	PTESTW	&lt;FC&gt;,&lt;ea&gt;,#&lt;level&gt;,An
+	
+	No size specs.
+
+<B>FUNCTION</B>
+	This instruction examines the ATC, if level is equal to zero,
+	a research in the translation tables is made, if level is different
+	of zero (1 to 7), then sets MMUSR bits.
+	This instruction can also store, in an address register An, physical
+	address encountred to last level of its research.
+
+	PTESTR or PTESTW version is used to simulate a read or write cycle and
+	like this, according to the informations founds, exactly set MMUSR.
+
+	MMUSR bits are set of the following manner:
+
+	MMUSR bits  |   PTEST level 0        |  PTEST level &gt; 0
+	~~~~~~~~~~  |   ~~~~~~~~~~~~~        |  ~~~~~~~~~~~~~~~
+	B (bit 15)  | This bit is set if the |This bit is set if a bus error
+	            | bit "Error Bus (B)" of |is generated during research in
+	            | the ATC is set.        |the tables.
+	----------------------------------------------------------------------
+	L (bit 14)  | This bit is cleared    | This bit is set if an index
+	            |                        |overflow a limit during a
+	            |                        |research.
+	----------------------------------------------------------------------
+	S (bit 13)  | This bit is cleared    | This bit is set for indicating
+	            |                        |a privilege violation: if S bit
+	            |                        |of one of the descriptors met
+	            |                        |is set and the FC2 bit mentioned
+	            |                        |in the instruction is cleared
+	            |                        |(user access). S isn't defined
+	            |                        |if the bit I of MMUSR is set.
+	----------------------------------------------------------------------
+	W (bit 11)  | This bit is set if the | This bit is set if WP bit of
+	            | bit WP in entry of the |one of the descriptors
+	            | examined ATC is set.   |encountred is set. Undefined
+	            | Undefined if I is set. |if I is set.
+	----------------------------------------------------------------------
+	I (bit 10)  | This bit is set if     |This bit is set if one of the
+	            | required logic address |descriptors encountred isn't
+	            | isn't in the ATC or if |valid (DT = 0) or if B or L of
+	            | the bit B of this entry|MMUSR are set during research.
+	            | is set.                |
+	----------------------------------------------------------------------
+	M (bit 9)   | This bit is set if the |This bit is set if the encountred
+	            | bit M of designed entry|page descriptor has its bit M
+	            | is set. Undefined if I |set. Undefined if I is set.
+	            | is set.                |
+	----------------------------------------------------------------------
+	T (bit 6)   | This bit is set if     | This bit is cleared.
+	            | mentioned logic address|
+	            | is part of defined     |
+	            | window by TT0 and/or   |
+	            | TT1.                   |
+	----------------------------------------------------------------------
+	N (bits     |This field is cleared   | This field represents the number
+	   2 to 0)  |                        | of level accessed during table
+	            |                        | research.
+	----------------------------------------------------------------------
+
+	&lt;FC&gt; operand can be mentioned:
+	·in immediate.
+	·by the three lower bits of a data register.
+	·by the register SFC or DFC.
+
+<B>FORMAT</B>
+	                                                   &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|-----------|-----------|
+	| 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |    MODE   | REGISTER  |
+	|---|---|---|-----------|---|---|-------------------------------|
+	| 1 | 0 | 0 |   LEVEL   |R/W| A |    REG    |         FC        | 
+	-----------------------------------------------------------------
+
+	R/W field indicates type of access used for research:
+	0-&gt;write access.
+	1-&gt;read access.
+
+	FC field indicates value of Function Codes of the address to test
+
+	10XXX	The Function Codes are XXX.
+	01DDD	The Function Codes are the bits 2 to 0 of a DDD data register.
+	0000	The Function Codes are specified in SFC.
+	0001	The Function Codes are specified in DFC.
+
+	Bit A specifies address register option:
+	0-&gt; no address register
+	1-&gt; address of last accessed descriptor is put in the register
+	specified by REG.
+
+	REG field indicates, if A = 1 the number of address register. Else
+	if A = 0, REG = 0.
+
+	LEVEL field indicates the highest logic level to go during research;
+	if test in the ATC, LEVEL = 0.
+
+<B>REGISTER</B>
+	&lt;ea&gt; specifies logic address to test, allowed addressing modes are:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       | -  |    -     | |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |    -     | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     | -  |    -     | |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      | -  |    -     | |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	Not affected.
+
+<B>SEE ALSO</B>
+	<a href="pload.HTML">PLOAD</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: ptest.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:11 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

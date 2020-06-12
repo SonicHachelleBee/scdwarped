@@ -1,0 +1,86 @@
+<HTML>
+<TITLE>CHecK register against upper and lower bounds</TITLE>
+<H1>CHecK register against upper and lower bounds</H1>
+<pre>
+<B>NAME</B>
+	CHK2 -- Check register against upper and lower bounds	(68020+)
+
+<B>SYNOPSIS</B>
+	CHK2	&lt;ea&gt;,Rn
+
+	Size = (Byte, Word, Long)
+
+<B>FUNCTION</B>
+	&lt;ea&gt; indicates memory area of two bounds: in 1st memory position,
+	lower bound, in 2nd memory position, upper bound. Those two values
+	are adjacent in memory.
+	For signed comparisons, the lowest arithmetic value, expressed as a
+	two complement integer, have to be the lower bound.
+
+	If Rn is a data register Dn and if size of operation is 8 or 16 bits,
+	only the 8 or 16 bits of low weight of Dn and bounds are taken in
+	count.
+	In opposite, if Rn is an address register An, it must be extension
+	of bounds sign and 32 bits of An are taken care.
+
+	If Rn is located out of 2 bounds, a CHK instruction, vector number 6,
+	occurs. 
+
+<B>FORMAT</B>
+	                                                  &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|-------|---|---|---|-----------|-----------|
+	| 0 | 0 | 0 | 0 | 0 | SIZE  | 0 | 1 | 1 |   MODE    | REGISTER  |
+	|---|-----------|---|-------|---|---|---|-----------|-----------|
+	|D/A| REGISTER  | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 
+	-----------------------------------------------------------------
+
+<B>REGISTER</B>
+	Register specifies the register Rn which contains the value to test.
+	If D/A = 0: Rn = Dn
+	If D/A = 1: Rn = An
+	&lt;ea&gt; specifies bounds, addressing modes allowed are:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       | -  |     -    | |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |     -    | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    |111 |  010   |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     | -  |     -    | |   (d8,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      | -  |     -    | |   (bd,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>SIZE</B>
+	00-&gt;one Byte operation
+	01-&gt;one Word operation
+	10-&gt;one Long operation
+
+<B>RESULT</B>
+	X - Not affected
+	N - Undefined.
+	Z - Set if Rn is equal to one of the two bounds. Cleared otherwise.
+	V - Undefined.
+	C - Set if Rn is out of bounds. Cleared otherwise.
+
+<B>SEE ALSO</B>
+	<a href="cmp.HTML">CMP </a> <a href="cmpi.HTML">CMPI</a> <a href="cmpa.HTML">CMPA</a>
+	<a href="chk.HTML">CHK</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: chk2.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:07 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

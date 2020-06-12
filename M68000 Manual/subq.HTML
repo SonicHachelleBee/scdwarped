@@ -1,0 +1,78 @@
+<HTML>
+<TITLE>SUBtract 3-bit immediate Quick</TITLE>
+<H1>SUBtract 3-bit immediate Quick</H1>
+<pre>
+<B>NAME</B>
+	SUBQ -- Subtract 3-bit immediate quick
+
+<B>SYNOPSIS</B>
+	SUBQ	#&lt;data&gt;,&lt;ea&gt;
+
+	Size = (Byte, Word, Long)
+
+<B>FUNCTION</B>
+	Subtracts the immediate value of 1 to 8 to the operand at the
+	destination location. The size of the operation may be specified as
+	byte, word, or long. When subtracting to address registers,
+        the condition codes are not altered, and the entire destination
+        address register is used regardless of the operation size.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|---|-------|-----------|-----------|
+	| 0 | 1 | 0 | 1 |    DATA   | 1 | SIZE  |    MODE   |  REGISTER |
+	----------------------------------------=========================
+                                                          &lt;ea&gt;
+
+<B>DATA</B>
+	000        -&gt;represent value 8
+	001 to 111 -&gt;immediate data from 1 to 7
+
+<B>SIZE</B>
+	00-&gt;one Byte operation
+	01-&gt;one Word operation
+	10-&gt;one Long operation
+
+<B>REGISTER</B>
+	&lt;ea&gt; is always destination, addressing modes are the followings:
+
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       |000 |N° reg. Dn| |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An *     |001 |N° reg. An| |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+	 * Word or Long only.
+
+<B>RESULT</B>
+	X - Set the same as the carry bit.
+	N - Set if the result is negative. Cleared otherwise.
+	Z - Set if the result is zero. Cleared otherwise.
+	V - Set if an overflow is generated. Cleared otherwise.
+	C - Set if a carry is generated. Cleared otherwise.
+
+<B>SEE ALSO</B>
+	<a href="add.HTML">ADD </a> <a href="addi.HTML">ADDI</a>
+	<a href="sub.HTML">SUB </a> <a href="subi.HTML">SUBI</a> <a href="addq.HTML">ADDQ</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: subq.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:12 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

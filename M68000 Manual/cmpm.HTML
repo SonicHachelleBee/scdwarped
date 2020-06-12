@@ -1,0 +1,49 @@
+<HTML>
+<TITLE>CoMPare Memory</TITLE>
+<H1>CoMPare Memory</H1>
+<pre>
+<B>NAME</B>
+	CMPM -- Compare memory
+
+<B>SYNOPSIS</B>
+	CMPM	(Ay)+,(Ax)+
+
+	Size = (Byte, Word, Long)
+
+<B>FUNCTION</B>
+	Subtracts the source operand from the destination operand
+	and sets the condition codes according to the result. The destination
+	operand is NOT changed. Operands are always addressed with the
+	postincrement mode.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|---|-------|---|---|---|-----------|
+	| 1 | 0 | 1 | 1 |Ax REGISTER| 1 | SIZE  | 0 | 0 | 1 |Ay REGISTER|
+	----------------------------------------=========================
+	                                                  &lt;ea&gt;
+
+<B>SIZE</B>
+	00-&gt;one Byte operation
+	01-&gt;one Word operation
+	10-&gt;one Long operation
+
+<B>REGISTER</B>
+	Ax register specifies destination operand (for post-incrementation).
+	Ay register specifies source operand.
+
+<B>RESULT</B>
+	X - Not affected
+	N - Set if the result is negative. Cleared otherwise.
+	Z - Set if the result is zero. Cleared otherwise.
+	V - Set if an overflow occours. Cleared otherwise.
+	C - Set if a borrow occours. Cleared otherwise.
+
+<B>SEE ALSO</B>
+	<a href="cmp.HTML">CMP </a> <a href="cmpi.HTML">CMPI</a> <a href="cmpa.HTML">CMPA</a> <a href="cmp2.HTML">CMP2</a>
+	<a href="tst.HTML">TST </a> <a href="chk.HTML">CHK </a> <a href="chk2.HTML">CHK2</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: cmpm.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:08 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

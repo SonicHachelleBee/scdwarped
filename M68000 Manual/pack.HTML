@@ -1,0 +1,50 @@
+<HTML>
+<TITLE>PACK binary coded decimal</TITLE>
+<H1>PACK binary coded decimal</H1>
+<pre>
+<B>NAME</B>
+	PACK -- Pack binary coded decimal	(68020+)
+
+<B>SYNOPSIS</B>
+	PACK	-(Ax),-(Ay),#&lt;adjustment&gt;
+	PACK	Dx,Dy,#&lt;adjustment&gt;
+
+        Size = (Byte, Long)
+
+<B>FUNCTION</B>
+	Convert byte-per-digit unpacked BCD to packed two-digit-
+	per-byte BCD.
+	When operand is in a data register, 16 bits adjustment is added
+	to source operand (16 bits). Then, bits 8 to 11 and 0 to 3 are
+	packed and placed in the bits 0 to 7 of destination register.
+	Others bits of this register are not altered.
+
+	When operand is in memory, there's a research by pre-decrementing
+	of the two bytes placed at given address. The two bytes are
+	linked together, then adjustment is added, and the compacted result
+	is stored at destination's place.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|---|---|---|---|---|---|-----------|
+	| 1 | 0 | 0 | 0 |   Dy/Ay   | 1 | 0 | 1 | 0 | 0 |R/M|   Dx/Ax   |
+	|---------------------------------------------------------------|
+	|                    16 BITS ADJUSTMENT                         |
+	-----------------------------------------------------------------
+
+	R/M = 0 -&gt; Direct addressing by data register.
+	R/M = 1 -&gt; Addressing by pre-decrementing.
+	Register Dy/Ay specifies destination register.
+	Register Dx/Ax specifies source register.
+	"16 BITS ADJUSTMENT" is an immediate value added to source operand.
+
+<B>RESULT</B>
+	None.
+
+<B>SEE ALSO</B>
+	<a href="unpk.HTML">UNPK</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: pack.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:11 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

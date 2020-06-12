@@ -1,0 +1,69 @@
+<HTML>
+<TITLE>Conditional Set</TITLE>
+<H1>Conditional Set</H1>
+<pre>
+<B>NAME</B>
+	Scc -- Conditional set
+
+<B>SYNOPSIS</B>
+	Scc	&lt;ea&gt;
+
+        Size = (Byte)
+
+<B>FUNCTION</B>
+        If condition is true then byte addressed by &lt;ea&gt; is set to $FF,
+        else byte addressed by &lt;ea&gt; is set to $00.
+
+	Condition code 'cc' specifies one of the following:
+0000 F  False            Z = 1      1000 VC oVerflow Clear   V = 0
+0001 T  True             Z = 0      1001 VS oVerflow Set     V = 1
+0010 HI HIgh             C + Z = 0  1010 PL PLus             N = 0
+0011 LS Low or Same      C + Z = 1  1011 MI MInus            N = 1
+0100 CC Carry Clear      C = 0      1100 GE Greater or Equal N (+) V = 0
+0101 CS Carry Set        C = 1      1101 LT Less Than        N (+) V = 1
+0110 NE Not Equal        Z = 0      1110 GT Greater Than     Z + (N (+) V) = 0
+0111 EQ EQual            Z = 1      1111 LE Less or Equal    Z + (N (+) V) = 1
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---------------|---|---|-----------|-----------|
+	| 0 | 1 | 0 | 1 | cc CONDITION  | 1 | 1 |    MODE   | REGISTER  |
+	----------------------------------------=========================
+	                                                   &lt;ea&gt;
+
+<B>REGISTER</B>
+	&lt;ea&gt; specifies operand to set, addressing modes allowed are:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       |000 |N° reg. Dn| |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |    -     | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	None.
+
+<B>SEE ALSO</B>
+	<a href="bcc.HTML">Bcc</a>	<a href="dbcc.HTML">DBcc</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: scc.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:12 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

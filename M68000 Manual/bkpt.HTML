@@ -1,0 +1,59 @@
+<HTML>
+<TITLE>BreaK-PoinT</TITLE>
+<H1>BreaK-PoinT</H1>
+<pre>
+<B>NAME</B>
+	BKPT -- Break-point
+
+<B>SYNOPSIS</B>
+	BKPT	#&lt;data&gt;
+
+<B>FUNCTION</B>
+	This instruction is used to support the program breakpoint
+	function for debug monitors and real-time hardware emulators, and
+	the operation will be dependent on the implementation. Execution of
+	this instruction will cause the MC68010 to run a breakpoint
+	acknowledge bus cycle and zeros on all address lines, but an
+	MC68020 will place the immediate data on lines A2, A3, and A4, and
+	zeros on lines A0 and A1.
+
+	Whether the breakpoint acknowledge cycle is terminaled with
+	 _____    ____       ___  
+	(DTACK), (BERR), or (VPA) the processor always takes an illegal
+	instruction exception. During exception processing, a debug monitor
+	can distinguish eight different software breakpoints by decoding the
+	field in the BKPT instruction.
+
+	For the MC68000 and the MC68HC000, this instruction causes an illegal
+	instruction exception, but does not run the breakpoint acknowledge
+	bus cycle.
+
+	There are two possible responses on an MC68020: normal and exception.
+	The normal response is an operation word (typically the instruction
+                                                                  ______
+	the BKPT originally replaced) on the data lines with the (DSACKx)
+	signal asserted. The operation word is the executed in place of the
+	breakpoint instruction.
+
+	For the exception response, a bus error signal will cause the MC68020
+	to take an illegal instruction exception, just as an MC68010 or
+	MC68000 would do.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|---|---|---|-----------|
+	| 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 1 |N° BREAKPT.|
+	-----------------------------------------------------------------
+
+	Number of break-point: Value between 0 and 7.
+
+<B>RESULT</B>
+	None.
+
+<B>SEE ALSO</B>
+	<a href="illegal.HTML">ILLEGAL   </a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: bkpt.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:07 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

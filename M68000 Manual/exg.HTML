@@ -1,0 +1,44 @@
+<HTML>
+<TITLE>Register EXchanGe</TITLE>
+<H1>Register EXchanGe</H1>
+<pre>
+<B>NAME</B>
+	EXG -- Register exchange
+
+<B>SYNOPSIS</B>
+	EXG	Rx,Ry
+
+	Size = (Long)
+
+<B>FUNCTION</B>
+	Exchanges the contents of any two registers.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|---|-------------------|-----------|
+	| 1 | 1 | 0 | 0 |Rx REGISTER| 1 |       OP-MODE     |Ry REGISTER|
+	-----------------------------------------------------------------
+
+	"Rx REGISTER" specifies a data or address register. If it's an
+	exchange between a data register and an address register, this field
+	define the data register.
+
+	"Ry REGISTER" specifies a data or address register. If it's an
+	exchange between a data register and an address register, this field
+	define the address register.
+
+<B>OP-MODE</B>
+	01000-&gt;Exchange between data registers.
+	01001-&gt;Exchange between address registers.
+	10001-&gt;Exchange between data and address registers.
+
+<B>RESULT</B>
+	None.
+
+<B>SEE ALSO</B>
+	<a href="swap.HTML">SWAP</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: exg.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:08 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

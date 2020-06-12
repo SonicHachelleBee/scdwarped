@@ -1,0 +1,61 @@
+<HTML>
+<TITLE>Add Binary Coded Decimal (w/extend)</TITLE>
+<H1>Add Binary Coded Decimal (w/extend)</H1>
+<pre>
+<B>NAME</B>
+	ABCD -- Add binary coded decimal
+
+<B>SYNOPSIS</B>
+	ABCD	Dy,Dx
+	ABCD	-(Ay),-(Ax)
+
+	Size = (Byte)
+
+<B>FUNCTION</B>
+	Adds the source operand to the destination operand along with
+	the extend bit, and stores the result in the destination location.
+	The addition is performed using binary coded decimal arithmetic.
+	The operands, which are packed BCD numbers, can be addressed in
+	two different ways:
+
+	1. Data register to data register: The operands are contained in the
+	   data registers specified in the instruction.
+
+	2. Memory to memory: The operands are addressed with the predecrement
+	   addressing mode using the address registers specified in the
+	   instruction.
+
+	This operation is a byte operation only.
+
+	Normally the Z condition code bit is set via programming before the
+	start of an operation. That allows successful tests for zero results
+	upon completion of multiple-precision operations.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|---|---|---|---|---|---|-----------|
+	| 1 | 1 | 0 | 0 |    Rx     | 1 | 0 | 0 | 0 | 0 |R/M|    Ry     |
+	-----------------------------------------------------------------
+
+	R/M = 0 -&gt; data register
+	R/M = 1 -&gt; address register
+	Rx:   destination register
+	Ry:   source register
+
+<B>RESULT</B>
+	X - Set the same as the carry bit.
+	N - Undefined
+	Z - Cleared if the result is non-zero. Unchanged otherwise.
+	V - Undefined
+	C - Set if a decimal carry was generated. Cleared otherwise.
+
+<B>SEE ALSO</B>
+	<a href="add.HTML">ADD </a> <a href="addi.HTML">ADDI</a> <a href="addq.HTML">ADDQ</a>
+	<a href="addx.HTML">ADDX</a>
+	<a href="sub.HTML">SUB </a> <a href="subi.HTML">SUBI</a> <a href="subq.HTML">SUBQ</a>
+	<a href="sbcd.HTML">SBCD</a> <a href="subx.HTML">SUBX</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: abcd.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:06 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

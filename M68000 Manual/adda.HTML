@@ -1,0 +1,67 @@
+<HTML>
+<TITLE>ADD Address</TITLE>
+<H1>ADD Address</H1>
+<pre>
+<B>NAME</B>
+	ADDA -- Add address
+
+<B>SYNOPSIS</B>
+	ADDA	&lt;ea&gt;,An
+
+	Size = (Word, Long)
+
+<B>FUNCTION</B>
+	Adds the source operand to the destination address register,
+	and stores the result in the destination address register. The size
+	of the operation may be specified as word or long. The entire
+	destination operand is used regardless of the operation size.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|-----------|-----------|-----------|
+	| 1 | 1 | 0 | 1 |  REGISTER |  OP-MODE  |    MODE   |  REGISTER |
+	----------------------------------------=========================
+                                                          &lt;ea&gt;
+<B>OP-MODE</B>
+	Indicates operation lenght:
+	011-&gt;one Word operation: source operand is extended to 32 bits
+	111-&gt;one Long operation
+
+<B>REGISTER</B>
+	One of the 8 address registers.
+	&lt;ea&gt; is always source, all addressing modes are allowed.
+
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       |000 |N° reg. Dn| |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       |001 |N° reg. An| |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    |111 |  010   |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (d16,An)    |101 |N° reg. An| |([bd,PC,Xi],od)|111 |  011   | 
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      |111 |  100   |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	None.
+
+<B>SEE ALSO</B>
+	<a href="addq.HTML">ADDQ</a> <a href="subq.HTML">SUBQ</a> <a href="suba.HTML">SUBA</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: adda.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:06 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

@@ -1,0 +1,84 @@
+<HTML>
+<TITLE>Bit Field TeST</TITLE>
+<H1>Bit Field TeST</H1>
+<pre>
+<B>NAME</B>
+	BFTST -- Bit field test
+
+<B>SYNOPSIS</B>
+	BFTST	&lt;ea&gt;{OFFSET:WIDTH}	(68020+)
+
+	No size specs.
+
+<B>FUNCTION</B>
+	&lt;ea&gt; indicates destination operand which a part of bits have to be
+	tested. Offset enables to locate first bit of field; width specifies
+	number of bits of this field. Field is tested, flags are set.
+	Be careful, this instruction operates from MSB to LSB!!
+
+<B>FORMAT</B>
+	                                                  &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|-----------|-----------|
+	| 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 1 |    MODE   | REGISTER  |
+	|---|---|---|---|---|-------------------|-----------------------|
+	| 0 | 0 | 0 | 0 |Do |       OFFSET      |Dw |      WIDTH        |
+	-----------------------------------------------------------------
+
+	If Do = 0-&gt;Field "OFFSET" contains an immediate value which represents
+	effective offset, value from 0 to 31.
+	If Do = 1-&gt;Field "OFFSET" indicates number of a data register (bits 9
+	and 10 of field cleared) which contains effective offset. Signed value
+	is represented on 32 bits., so it's extended from -2 EXP 31 to
+	(+2 EXP 31) -1.
+
+	If Dw = 0-&gt;field "WIDTH" contains an immediate value between 1 and 31
+	which indicates a width from 1 to 31 bits. A value of 0 indicates a
+	width of 32 bits.
+	If Dw = 1-&gt;field "WIDTH" indicates number of a data register (bits 3
+	and 4 of field cleared) which contains width of bit field. The value
+	modulo 32 can go from 1 to 31, indicating a width from 1 to 31 bits.
+	A value 0 indicates a width of 32 bits.
+
+<B>REGISTER</B>
+	&lt;ea&gt; is always destination, addressing modes are the followings:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       |000 |N° reg. Dn| |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |     -    | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    |111 |  010   |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     | -  |     -    | |   (d8,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      | -  |     -    | |   (bd,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)|111 |  011   | 
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	X - not affected
+	N - Set if MSB of field is set. Cleared otherwise.
+	Z - Set if all the bits of the field tested are zero.
+	    Cleared otherwise.
+	V - Always cleared.
+	C - Always cleared.
+
+<B>SEE ALSO</B>
+	<a href="bfchg.HTML">BFCHG</a>	<a href="bfclr.HTML">BFCLR</a>	<a href="bfset.HTML">BFSET</a>
+
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: bftst.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:07 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

@@ -1,0 +1,76 @@
+<HTML>
+<TITLE>Logical AND Immediate</TITLE>
+<H1>Logical AND Immediate</H1>
+<pre>
+<B>NAME</B>
+	ANDI -- Logical AND immediate
+
+<B>SYNOPSIS</B>
+	ANDI	#&lt;data&gt;,&lt;ea&gt;
+
+	Size = (Byte, Word, Long)
+
+<B>FUNCTION</B>
+	Performs a bit-wise AND operation with the immediate data and
+	the destination operand and stores the result in the destination. The
+	size of ther operation can be specified as byte, word, or long. The
+	size of the immediate data matches the operation size.
+
+<B>FORMAT</B>
+                                                          &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|-------|-----------|-----------|
+	| 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | SIZE  |   MODE    |  REGISTER |
+	|---------------------------------------------------------------|
+	| 16 BITS DATA (with last Byte) |          8 BITS DATA          |
+	|---------------------------------------------------------------|
+	|             32 BITS DATA (included last Word)                 |
+	-----------------------------------------------------------------
+
+<B>SIZE</B>
+	00-&gt;one Byte operation
+	01-&gt;one Word operation
+	10-&gt;one Long operation
+
+<B>REGISTER</B>
+	&lt;ea&gt; is always destination, addressing modes are the followings:
+
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       |000 |N° reg. Dn| |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |     -    | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	X - Not affected
+	N - Set if the most-significant bit of the result was set. Cleared
+	    otherwise.
+	Z - Set if the result was zero. Cleared otherwise.
+	V - Always cleared.
+	C - Always cleared.
+
+<B>SEE ALSO</B>
+	<a href="and.HTML">AND </a> <a href="andiccr.HTML">ANDI to CCR</a> <a href="andisr.HTML">ANDI to SR</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: andi.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:06 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

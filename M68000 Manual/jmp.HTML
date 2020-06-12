@@ -1,0 +1,60 @@
+<HTML>
+<TITLE>Unconditional JuMP</TITLE>
+<H1>Unconditional JuMP</H1>
+<pre>
+<B>NAME</B>
+	JMP -- Unconditional jump
+
+
+<B>SYNOPSIS</B>
+	JMP	&lt;ea&gt;
+
+<B>FUNCTION</B>
+	Program execution continues at the address specified by
+	the operand.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|-----------|-----------|
+	| 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 1 | 1 |    MODE   | REGISTER  |
+	----------------------------------------=========================
+	                                                   &lt;ea&gt;
+<B>REGISTER</B>
+	&lt;ea&gt; specifies address of next instruction.
+	Allowed addressing modes are:
+
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       | -  |    -     | |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |    -     | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    |111 |  010   |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     | -  |    -     | |   (d8,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      | -  |    -     | |   (bd,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	None.
+
+<B>SEE ALSO</B>
+	<a href="bra.HTML">BRA</a> <a href="jsr.HTML">JSR</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: jmp.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:09 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>
+<br>

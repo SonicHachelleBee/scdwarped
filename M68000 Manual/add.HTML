@@ -1,0 +1,104 @@
+<HTML>
+<TITLE>ADD integer</TITLE>
+<H1>ADD integer</H1>
+<pre>
+<B>NAME</B>
+	ADD -- Add integer
+
+<B>SYNOPSIS</B>
+	ADD	&lt;ea&gt;,Dn
+	ADD	Dn,&lt;ea&gt;
+
+	Size = (Byte, Word, Long)
+
+<B>FUNCTION</B>
+	Adds the source operand to the destination operand using
+	binary addition, and stores the result in the destination location.
+	The size of the operation may be specified as byte, word, or long.
+	The mode of the instruction indicates which operand is the source and
+	which is the destination as well as the operand size.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|-----------|-----------|-----------|
+	| 1 | 1 | 0 | 1 |  REGISTER |  OP-MODE  |    MODE   |  REGISTER |
+	----------------------------------------=========================
+                                                          &lt;ea&gt;
+
+<B>OP-MODE</B>
+	Byte	Word	Long
+	~~~~	~~~~	~~~~
+	000	001	010	(Dn) + (&lt;ea&gt;) -&gt; Dn
+	100	101	110	(&lt;ea&gt;) + (Dn) -&gt; &lt;ea&gt;
+
+<B>REGISTER</B>
+	One of the 8 datas registers
+
+	If &lt;ea&gt; is source, allowed addressing modes are:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       |000 |N° reg. Dn| |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An *     |001 |N° reg. An| |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    |111 |  010   |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (d16,An)    |101 |N° reg. An| |([bd,PC,Xi],od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      |111 |  100   |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+	 * Word or Long only
+
+	If &lt;ea&gt; is destination, allowed addressing modes are:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       | -  |     -    | |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |     -    | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+	When destination is an Address Register, ADDA instruction is used.
+
+<B>RESULT</B>
+	X - Set the same as the carry bit.
+	N - Set if the result is negative. Cleared otherwise.
+	Z - Set if the result is zero. Cleared otherwise.
+	V - Set if an overflow is generated. Cleared otherwise.
+	C - Set if a carry is generated. Cleared otherwise.
+
+<B>SEE ALSO</B>
+	<a href="addi.HTML">ADDI</a> <a href="addq.HTML">ADDQ</a> <a href="addx.HTML">ADDX</a>
+	<a href="sub.HTML">SUB </a> <a href="subi.HTML">SUBI</a> <a href="subq.HTML">SUBQ</a>
+	<a href="subx.HTML">SUBX</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: add.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:06 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

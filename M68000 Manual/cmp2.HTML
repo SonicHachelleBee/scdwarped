@@ -1,0 +1,82 @@
+<HTML>
+<TITLE>CoMPare register against upper and lower bounds</TITLE>
+<H1>CoMPare register against upper and lower bounds</H1>
+<pre>
+<B>NAME</B>
+	Cmp2 -- Compare register against upper and lower bounds	(68020+)
+
+<B>SYNOPSIS</B>
+	CMP2	&lt;ea&gt;,Rn
+
+<B>FUNCTION</B>
+	Used to compare value of Rn (Dn or An) with two lower and upper
+	bounds, which are stored in memory, at address given by &lt;ea&gt; (in
+	two adjacent areas).
+	Lower bound have to be stored before upper bound. Flags are set
+	following to the result of comparison.
+
+	If Rn is a data register Dn, and if operation is made on 8 or
+	16 bits, only the 8 or 16 bits of Dn are taken in count.
+	In opposite, in the case of Rn as an address register and if a 16
+	bits operation is granted, the 32 bits of An are compared to bounds
+	which are, them, extended on 32 bits by their signs.
+
+
+<B>FORMAT</B>
+	                                                  &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|-------|---|---|---|-----------|-----------|
+	| 0 | 0 | 0 | 0 | 0 | SIZE  | 0 | 1 | 1 |   MODE    | REGISTER  |
+	|---|-----------|---|-------|---|---|---|-----------|-----------|
+	|D/A| REGISTER  | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 
+	-----------------------------------------------------------------
+
+<B>REGISTER</B>
+	Register specifies the register Rn which contains the value to test.
+	If D/A = 0: Rn = Dn
+	If D/A = 1: Rn = An
+	&lt;ea&gt; specifies bounds, addressing modes allowed are:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       | -  |     -    | |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |     -    | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    |111 |  010   |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     | -  |     -    | |   (d8,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      | -  |     -    | |   (bd,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>SIZE</B>
+	00-&gt;one Byte operation
+	01-&gt;one Word operation
+	10-&gt;one Long operation
+
+<B>RESULT</B>
+	X - Not affected
+	N - Undefined.
+	Z - Set if Rn is equal to one of the two bounds. Cleared otherwise.
+	V - Undefined.
+	C - Set if Rn is out of bounds. Cleared otherwise.
+
+<B>SEE ALSO</B>
+	<a href="cmp.HTML">CMP </a> <a href="cmpi.HTML">CMPI</a> <a href="cmpa.HTML">CMPA</a>
+	<a href="chk2.HTML">CHK2</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: cmp2.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:08 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

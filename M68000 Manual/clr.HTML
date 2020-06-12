@@ -1,0 +1,72 @@
+<HTML>
+<TITLE>CLeaR</TITLE>
+<H1>CLeaR</H1>
+<pre>
+<B>NAME</B>
+	CLR -- Clear
+
+<B>SYNOPSIS</B>
+	CLR	&lt;ea&gt;
+
+	Size = (Byte, Word, Long)
+
+<B>FUNCTION</B>
+	Clears the destination operand to zero.
+
+	On an MC68000 and MC68HC000, a CLR instruction does both a
+	read and a write to the destination. Because of this, this
+	instruction should never be used on custom chip registers.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|-------|-----------|-----------|
+	| 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 |  SIZE |    MODE   | REGISTER  |
+	----------------------------------------=========================
+	                                                  &lt;ea&gt;
+
+<B>REGISTER</B>
+	&lt;ea&gt; specifies destination operand, addressing modes allowed are:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       |000 |N° reg. Dn| |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |     -    | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>SIZE</B>
+	00-&gt;one Byte operation
+	01-&gt;one Word operation
+	10-&gt;one Long operation
+
+<B>RESULT</B>
+	X - Not affected
+	N - Always cleared
+	Z - Always set
+	V - Always cleared
+	C - Always cleared
+
+<B>SEE ALSO</B>
+	<a href="move.HTML">MOVE </a> <a href="moveq.HTML">MOVEQ</a>
+	<a href="bclr.HTML">BCLR </a> <a href="bfclr.HTML">BFCLR</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: clr.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:07 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

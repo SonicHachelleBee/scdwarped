@@ -1,0 +1,38 @@
+<HTML>
+<TITLE>SWAP register upper and lower words</TITLE>
+<H1>SWAP register upper and lower words</H1>
+<pre>
+<B>NAME</B>
+	SWAP -- Swap register upper and lower words
+
+<B>SYNOPSIS</B>
+        SWAP	Dn
+
+        Size = (Word)
+
+<B>FUNCTION</B>
+        Swaps between 16 low bits and 16 high bits of register.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|---|---|---|-----------|
+	| 0 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | REGISTER  |
+	-----------------------------------------------------------------
+
+	"REGISTER" indicates the number of register on which swap is made.
+
+<B>RESULT</B>
+	X - Not affected
+	N - Set if the most-significant bit of the result was set. Cleared
+	    otherwise.
+	Z - Set if the 32 bits result was zero. Cleared otherwise.
+	V - Always cleared.
+	C - Always cleared.
+
+<B>SEE ALSO</B>
+	<a href="exg.HTML">EXG</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: swap.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:12 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

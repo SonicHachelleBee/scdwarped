@@ -1,0 +1,83 @@
+<HTML>
+<TITLE>Compare And Swap</TITLE>
+<H1>Compare And Swap</H1>
+<pre>
+<B>NAME</B>
+	CAS -- Compare and swap	(68020+)
+
+<B>SYNOPSIS</B>
+	CAS	Dc,Du,&lt;ea&gt;
+
+	Size = (Byte, Word, Long)
+
+<B>FUNCTION</B>
+	This instruction is a read-modify-write instruction and should
+	NEVER be used on Amiga because of conflicts with customs chips.
+	Destination operand, which is in memory at address specified
+	by &lt;ea&gt;, is compared to  data register Dc (Data Compare). This
+	register is used as reference in the principle of this instruction.
+	If there's equality (Z=1), destination operand can be updated, i.e.
+	the new operand Du (Data Update) is moved in destination.
+	If there's no equality (Z=0), it's the reference register Dc which
+	must be updated. So there's a move from destination operand to Dc.
+
+<B>FORMAT</B>
+                                                          &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|-------|---|---|---|-----------|-----------|
+	| 0 | 0 | 0 | 0 | 1 | SIZE  | 0 | 1 | 1 |   MODE    |  REGISTER |
+	|---|---|---|---|---|-------|-----------|-----------|-----------|
+	| 0 | 0 | 0 | 0 | 0 | 0 | 0 |Du REGISTER| 0 | 0 | 0 |Dc REGISTER|
+	-----------------------------------------------------------------
+
+<B>SIZE</B>
+	01-&gt;one Byte operation
+	10-&gt;one Word operation
+	11-&gt;one Long operation
+
+<B>REGISTER</B>
+	Du register: indicates number of data register, which contains the
+	new value to update in destination operand.
+
+	Dc register: indicates number of data register, which contains the
+	reference value to compare to destination operand.
+
+	&lt;ea&gt; is always destination, addressing modes are the followings:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       | -  |     -    | |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |     -    | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	X - not affected
+	N - Set if the result of comparison is negative. Cleared otherwise.
+	Z - Set if the result of comparison is zero. Cleared otherwise.
+	V - Set if overflow. Cleared otherwise.
+	C - Set if carry. Cleared otherwise.
+
+<B>SEE ALSO</B>
+	<a href="cas2.HTML">CAS2</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: cas.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:07 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

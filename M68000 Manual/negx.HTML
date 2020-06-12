@@ -1,0 +1,75 @@
+<HTML>
+<TITLE>NEGate with eXtend</TITLE>
+<H1>NEGate with eXtend</H1>
+<pre>
+<B>NAME</B>
+	NEGX -- Negate with extend
+
+<B>SYNOPSIS</B>
+	NEGX	&lt;ea&gt;
+
+	Size = (Byte, Word, Long)
+
+<B>FUNCTION</B>
+	Perform an operation similar to a <B>NEG</B>, with the
+	exception that the operand and the extend bit are both
+	subtracted from zero. The result then is being placed in
+	the given &lt;ea&gt;.
+
+	As with <B>ADDX</B>, <B>SUBX</B>, <B>ABCD</B>,
+	<B>SBCD</B>, and <B>NBCD</B>, it can be useful to set
+	the zero flag before performing this operation so that
+	multi precision operations can be tested for zero.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|-------|-----------|-----------|
+	| 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | SIZE  |    MODE   | REGISTER  |
+	----------------------------------------=========================
+	                                                   &lt;ea&gt;
+
+<B>SIZE</B>
+	00-&gt;Byte.
+	01-&gt;Word.
+	10-&gt;Long.
+
+<B>REGISTER</B>
+	&lt;ea&gt; specifies destination operand, addressing modes allowed are:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       |000 |N° reg. Dn| |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |    -     | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	X - Set the same as the carry bit.
+	N - Set if the result is negative, otherwise cleared.
+	Z - Cleared if the result is non-zero, otherwise unchanged.
+	V - Set if an overflow is generated, cleared otherwise.
+	C - Set if a borrow is generated, otherwise cleared.
+
+<B>SEE ALSO</B>
+	<a href="neg.HTML">NEG</a> <a href="nbcd.HTML">NBCD</a> <a href="addx.HTML">ADDX</a> <a href="subx.HTML">SUBX</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: negx.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:11 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

@@ -1,0 +1,122 @@
+<HTML>
+<TITLE>Logical Shift Left and Logical Shift Right</TITLE>
+<H1>Logical Shift Left and Logical Shift Right</H1>
+<pre>
+<B>NAME</B>
+	LSL, LSR -- Logical shift left and logical shift right
+
+<B>SYNOPSIS</B>
+	LSd	Dx,Dy
+	LSd	#&lt;data&gt;,Dy
+	LSd	&lt;ea&gt;
+	where <B>d</B> is direction, L or R
+
+	Size = (Byte, Word, Long)
+
+<B>FUNCTION</B>
+	Shift the bits of the operand in the specified direction.
+	The carry bit set set to the last bit shifted out of the operand.
+	The shift count for the shifting of a register may be specified in
+	two different ways:
+
+	1. Immediate - the shift count is specified in the instruction (shift
+	               range 1-8).
+	2. Register  - the shift count is contained in a data register
+	               specified in the instruction (shift count mod 64)
+
+	For a register, the size may be byte, word, or long, but for a memory
+	location, the size must be a word. The shift count is also restricted
+	to one for a memory location.
+
+	LSL:              &lt;--  
+	      C &lt;------ OPERAND &lt;--- 0
+	            |
+	            |    (V = 0)
+	      X &lt;---'
+	       
+
+	LSR:
+                 --&gt;
+	0 ---&gt; OPERAND -------&gt; C
+                          |
+	                  |
+	                  `---&gt; X
+
+<B>FORMAT</B>
+	In the case of the shifting of a register:
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|---|-------|---|---|---|-----------|
+	| 1 | 1 | 1 | 0 |  NUMBER/  |dr |  SIZE |i/r| 0 | 1 | REGISTER  |
+	|   |   |   |   |  REGISTER |   |       |   |   |   |           |
+	-----------------------------------------------------------------
+
+	In the case of the shifting of a memory area:
+	~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|-----------|-----------|
+	| 1 | 1 | 1 | 0 | 0 | 0 | 1 |dr | 1 | 1 |    MODE   | REGISTER  |
+	----------------------------------------=========================
+	                                                  &lt;ea&gt;
+
+<B>NUMBER/REGISTER</B>
+	Specifies number of shifting or number of register which contents
+	the number of shifting.
+	If i/r = 0, number of shifting is specified in the instruction as
+	immediate data
+	If i/r = 1, it's specified in the data register.
+	If dr = 0, right shifting
+	If dr = 1, left shifting
+
+<B>SIZE</B>
+	00-&gt;one Byte operation
+	01-&gt;one Word operation
+	10-&gt;one Long operation
+
+<B>REGISTER</B>
+	For a register shifting:
+	Indicates the number of data register on which shifting is applied.
+
+	For a memory shifting:
+	&lt;ea&gt; indicates operand which should be shifted.
+	Only addressing modes relatives to memory are allowed:
+
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       | -  |     -    | |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |     -    | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	X - Set according to the last bit shifted out of the operand.
+	N - Set if the result is negative. Cleared otherwise.
+	Z - Set if the result is zero. Cleared otherwise.
+	V - Always cleared
+	C - Set according to the last bit shifted out of the operand.
+
+<B>SEE ALSO</B>
+	<a href="asd.HTML">ASL, ASR</a>	<a href="rod.HTML">ROL, ROR</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: lsd.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:09 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

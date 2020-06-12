@@ -1,0 +1,120 @@
+<HTML>
+<TITLE>Decrement and Branch Conditionally</TITLE>
+<H1>Decrement and Branch Conditionally</H1>
+<pre>
+<B>NAME</B>
+	DBcc -- Decrement and branch conditionally
+
+<B>SYNOPSIS</B>
+	DBcc	Dn,&lt;label&gt;
+
+	Size of offset = (Word)
+
+<B>FUNCTION</B>
+	Controls a loop of instructions. The parameters are: a
+	condition code, a data register (counter), and an offset value.
+	The instruction first tests the condition (for termination); if it
+	is true, no operation is performed. If the termination condition is
+	not true, the low-order 16 bits of the counter are decremented by
+	one. If the result is -1, execution continues at the next
+	instruction, otherwise, execution continues at the specified
+	address.
+
+	Condition code 'cc' specifies one of the following:
+0000 F  False            Z = 1      1000 VC oVerflow Clear   V = 0
+0001 T  True             Z = 0      1001 VS oVerflow Set     V = 1
+0010 HI HIgh             C + Z = 0  1010 PL PLus             N = 0
+0011 LS Low or Same      C + Z = 1  1011 MI MInus            N = 1
+0100 CC Carry Clear      C = 0      1100 GE Greater or Equal N (+) V = 0
+0101 CS Carry Set        C = 1      1101 LT Less Than        N (+) V = 1
+0110 NE Not Equal        Z = 0      1110 GT Greater Than     Z + (N (+) V) = 0
+0111 EQ EQual            Z = 1      1111 LE Less or Equal    Z + (N (+) V) = 1
+
+
+	Keep the following in mind when using DBcc instructions:
+	1. A DBcc acts as the UNTIL loop contruct in high level
+	   languages. E.g., DBMI would be "decrement and branch until
+	   minus".
+	2. Most assemblers accept DBRA or DBF for use when no condition
+	   is required for termination of a loop.
+
+
+        The DBcc will, unlike the Bcc instruction, take the branch only if
+        the set of conditions are NOT satified. The loop will be terminated
+        if the condition is true, or the counter is zero BEFORE a decrement,
+        and wrap to -1. This mean that if you execute code like:
+
+	move.w	#30,d0
+
+.Loop
+	move.l	(a0)+,(a1)+
+	dbf	d0,.Loop
+
+        then the copy will be executed *31* times, and 124 bytes of memory
+        will be copied, not 120.
+
+        A good practice is therefore to write:
+
+	move.w	#31-1,d0
+
+.Loop
+	move.l	(a0)+,(a1)+
+	dbf	d0,.Loop
+
+        To compare two strings that may be in excess of 64k length for
+        beeing equal, you could execute the following code:
+	...
+
+	move.l	#$53452-1,d0
+	beq.s	.NoLength	; Zero length!
+	bra.s	.StartOuterLoop	; The upper word contain count of 65536's...
+
+.OuterLoop
+	swap	d0
+
+.InnerLoop
+	cmpm.b	(a0)+,(a1)+
+	dbne	d0,.InnerLoop	; Remember, drop trough on condition TRUE.
+
+.StartOuterLoop		        ; d0 will be $FFFF on 2.+ run-through
+	bne.s	.NotEqual	; Dropped through due to Not Equal?
+	swap	d0		; Get upper part of word...	
+	dbf	d0,.OuterLoop
+	...
+
+        It would not be possible to use two sets of DBNEs, as SWAP
+        changes the condition codes - and we don't want the drop-
+        though to be on account of D0, instead of the compares...
+
+        Another neat trick is to use instruction as a conditional
+        decrementer; this code will decrement d0.w if the last
+        instruction returned NOT EQUAL:
+	...
+	dbeq	d0,.Next
+
+.Next
+	...
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---------------|---|---|---|---|---|-----------|
+	| 0 | 1 | 0 | 1 |   CONDITION   | 1 | 1 | 0 | 0 | 1 | REGISTER  |
+	|---------------------------------------------------------------|
+	|                      16 BITS OFFSET (d16)                     |
+	-----------------------------------------------------------------
+
+	"CONDITION" is one of the condition code given some lines before.
+	"REGISTER" is the number of data register.
+	Offset is the relative gap in byte to do branching.
+
+<B>RESULT</B>
+	Not affected.
+
+<B>SEE ALSO</B>
+	<a href="bcc.HTML">Bcc</a> <a href="scc.HTML">Scc</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: dbcc.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:08 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>
+<br>Changed cmp.b opcode to cmpm.b at label .InnerLoop. 19 Jun 1995 Rune Skårsmoen

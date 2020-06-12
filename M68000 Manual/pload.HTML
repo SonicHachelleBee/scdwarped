@@ -1,0 +1,87 @@
+<HTML>
+<TITLE>LOAD of an entry in the ATC (PRIVILEGED)</TITLE>
+<H1>LOAD of an entry in the ATC (PRIVILEGED)</H1>
+<pre>
+<B>NAME</B>
+	PLOAD -- Load of an entry in the ATC (PRIVILEGED)
+
+<B>SYNOPSIS</B>
+	PLOADR	&lt;FC&gt;,&lt;ea&gt;
+	PLOADW	&lt;FC&gt;,&lt;ea&gt;
+	
+	No size specs.
+
+<B>FUNCTION</B>
+	Those instructions are used to load in the ATC (PMMU cache), one entry
+	following to logic specified &lt;ea&gt;. A research in table  is made for
+	this cache modification and attributes of final descriptor are updated
+	(bits U and M for PLOADW, bits U for PLOADR) according to the executed
+	instruction. PLOADR makes a loading of an entry in the ATC, as if a
+	read cycle was made. PLOADW makes a loading of an entry in the ATC,
+	as if a write cycle was made.
+
+	The status register of the PMMU, MMUSR, isn't affected by this
+	instruction.
+
+	&lt;FC&gt; operand can be mentioned:
+	·in immediate.
+	·by the three lower bits of a data register.
+	·by the register SFC or DFC.
+
+<B>FORMAT</B>
+	                                                   &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|-----------|-----------|
+	| 1 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 |    MODE   | REGISTER  |
+	|---|---|---|---|---|---|---|---|---|---|-----------------------|
+	| 0 | 0 | 1 | 0 | 0 | 0 |R/W| 0 | 0 | 0 | 0 |         FC        | 
+	-----------------------------------------------------------------
+
+	R/W field indicates type of access used for research:
+	0-&gt;write access.
+	1-&gt;read access.
+
+	FC field indicates value of Function Codes of the entry to
+	invalidate.
+
+	10XXX	The Function Codes are XXX.
+	01DDD	The Function Codes are the bits 2 to 0 of a DDD data register.
+	0000	The Function Codes are specified in SFC.
+	0001	The Function Codes are specified in DFC.
+
+<B>REGISTER</B>
+	&lt;ea&gt; specifies logic address to load, allowed addressing modes are:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       | -  |    -     | |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |    -     | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     | -  |    -     | |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      | -  |    -     | |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	Not affected.
+
+<B>SEE ALSO</B>
+	<a href="pmove.HTML">PMOVE</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: pload.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:11 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

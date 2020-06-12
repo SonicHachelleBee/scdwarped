@@ -1,0 +1,131 @@
+<HTML>
+<TITLE>Signed and Unsigned MULtiply</TITLE>
+<H1>Signed and Unsigned MULtiply</H1>
+<pre>
+<B>NAME</B>
+	MULS -- Signed multiply
+	MULU -- Unsigned multiply
+
+<B>SYNOPSIS</B>
+	MULS.W	&lt;ea&gt;,Dn		16*16-&gt;32
+	MULS.L	&lt;ea&gt;,Dn		32*32-&gt;32	68020+
+	MULS.L	&lt;ea&gt;,Dh:Dl	32*32-&gt;64	68020+
+
+	MULU.W	&lt;ea&gt;,Dn		16*16-&gt;32
+	MULU.L	&lt;ea&gt;,Dn		32*32-&gt;32	68020+
+	MULU.L	&lt;ea&gt;,Dh:Dl	32*32-&gt;64	68020+
+
+	Size = (Word)
+	Size = (Word, Long)			68020+
+
+<B>FUNCTION</B>
+	Multiply two signed (MULS) or unsigned (MULU) integers
+	to produce either a signed or unsigned, respectivly,
+	result.
+
+	This instruction has three forms. They are basically
+	word, long word, and quad word. The first version is
+	the only one available on a processore lower than a
+	68020. It will multiply two 16-bit integers are produce
+	a 32-bit result. The second will multiply two 32-bit
+	integers and produce a 32-bit result.
+
+	The third form needs some special consideration. It
+	will multiply two 32-bit integers, specified by &lt;ea&gt;
+	and Dl, the result is (sign) extended to 64-bits with
+	the low order 32 being placed in Dl and the high order
+	32 being placed in Dh.
+
+<B>FORMAT</B>
+	In the case of MULS.W:
+	~~~~~~~~~~~~~~~~~~~~~                              &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|---|---|---|-----------|-----------|
+	| 1 | 1 | 0 | 0 | REGISTER  | 1 | 1 | 1 |    MODE   | REGISTER  |
+	-----------------------------------------------------------------
+
+	In the case of MULS.L:
+	~~~~~~~~~~~~~~~~~~~~~                               &lt;ea&gt;
+	-----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10  | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|----|---|---|---|---|-----------|-----------|
+	| 0 | 1 | 0 | 0 | 1 | 1  | 0 | 0 | 0 | 0 |    MODE   | REGISTER  |
+	|---|-----------|---|----|---|---|---|---|-----------|-----------|
+	| 0 |Dq REGISTER| 1 |SIZE| 0 | 0 | 0 | 0 | 0 | 0 | 0 |Dr REGISTER|
+	------------------------------------------------------------------
+
+	In the case of MULU.W:
+	~~~~~~~~~~~~~~~~~~~~~                              &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|---|---|---|-----------|-----------|
+	| 1 | 1 | 0 | 0 | REGISTER  | 0 | 1 | 1 |    MODE   | REGISTER  |
+	-----------------------------------------------------------------
+
+	In the case of MULU.L:
+	~~~~~~~~~~~~~~~~~~~~~                               &lt;ea&gt;
+	-----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10  | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|----|---|---|---|---|-----------|-----------|
+	| 0 | 1 | 0 | 0 | 1 | 1  | 0 | 0 | 0 | 0 |    MODE   | REGISTER  |
+	|---|-----------|---|----|---|---|---|---|-----------|-----------|
+	| 0 |Dq REGISTER| 0 |SIZE| 0 | 0 | 0 | 0 | 0 | 0 | 0 |Dr REGISTER|
+	------------------------------------------------------------------
+
+	"REGISTER" indicates the number of data register.
+
+	"Dq REGISTER" indicates the number of data register for destination
+	operand. This register first contains 32 bits of low weight of
+	dividend, and after the value of quotient on 32 bits.
+
+	"SIZE" specifies if dividend is on 32 or 64 bits:
+	0-&gt; 32 bits dividend placed in Dq.
+	1-&gt; 64 bits dividend placed in Dr:Dq.
+
+	"Dr REGISTER" indicates the number of data register for destination
+	operand. This register first contains 32 bits of upper weight of
+	dividend if "SIZE" = 1, and after the value of rest on 32 bits.
+
+	If Dr and Dq represents the same register, only quotient on 32 bits
+	is put in Dq.
+
+	&lt;ea&gt; field specifies source operand, allowed addressing modes are:
+
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       |000 |N° reg. Dn| |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |    -     | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    |111 |  010   |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      |111 |  100   |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	X - Not affected.
+	N - Set if the result is negative. Cleared otherwise.
+	Z - Set if the result is zero. Cleared otherwise.
+	V - Set if overflow. Cleared otherwise.
+	C - Always cleared.
+
+<B>SEE ALSO</B>
+	<a href="divs.HTML">DIVS</a>	<a href="divu.HTML">DIVU</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: mul.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:10 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

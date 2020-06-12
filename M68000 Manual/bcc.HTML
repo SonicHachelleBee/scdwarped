@@ -1,0 +1,51 @@
+<HTML>
+<TITLE>Conditional branch</TITLE>
+<H1>Conditional branch</H1>
+<pre>
+<B>NAME</B>
+	Bcc -- Conditional branch
+
+<B>SYNOPSIS</B>
+	Bcc	&lt;label&gt;
+
+	Size = (Byte, Word, Long*)
+
+	* 68020+ only
+
+<B>FUNCTION</B>
+	If condition true then program execution continues at:
+	(PC) + offset.
+	PC value is instruction address more two.
+	Offset is the relative value in bytes which separate Bcc instruction
+	of mentioned label.
+ 
+	Condition code 'cc' specifies one of the following:
+0000 F  False            Z = 1      1000 VC oVerflow Clear   V = 0
+0001 T  True             Z = 0      1001 VS oVerflow Set     V = 1
+0010 HI HIgh             C + Z = 0  1010 PL PLus             N = 0
+0011 LS Low or Same      C + Z = 1  1011 MI MInus            N = 1
+0100 CC Carry Clear      C = 0      1100 GE Greater or Equal N (+) V = 0
+0101 CS Carry Set        C = 1      1101 LT Less Than        N (+) V = 1
+0110 NE Not Equal        Z = 0      1110 GT Greater Than     Z + (N (+) V) = 0
+0111 EQ EQual            Z = 1      1111 LE Less or Equal    Z + (N (+) V) = 1
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---------------|-------------------------------|
+	| 0 | 1 | 1 | 0 |   CONDITION   |         8 BITS OFFSET         |
+	|---------------------------------------------------------------|
+	|            16 BITS OFFSET, IF 8 BITS OFFSET = $00             |
+	|---------------------------------------------------------------|
+	|            32 BITS OFFSET, IF 8 BITS OFFSET = $FF             |
+	-----------------------------------------------------------------
+
+<B>RESULT</B>
+	None.
+
+<B>SEE ALSO</B>
+	<a href="bra.HTML">BRA </a> <a href="dbcc.HTML">DBcc</a> <a href="scc.HTML">Scc </a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: bcc.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:06 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

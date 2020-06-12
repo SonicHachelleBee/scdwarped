@@ -1,0 +1,69 @@
+<HTML>
+<TITLE>Move Address Source -> Destination</TITLE>
+<H1>Move Address Source -> Destination</H1>
+<pre>
+<B>NAME</B>
+	MOVEA -- Source -&gt; Destination
+
+<B>SYNOPSIS</B>
+	MOVEA	&lt;ea&gt;,An
+
+	Size = (Word, Long)
+
+<B>FUNCTION</B>
+	Move the contents of the source to the destination address
+	register. Word sized operands are sign extended to 32 bits
+	before the operation is done.
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|-------|-----------|---|---|---|-----------|-----------|
+	| 0 | 0 |  SIZE |  ADDRESS  | 0 | 0 | 1 |    MODE   | REGISTER  |
+	|   |   |       |  REGISTER |   |   |   |           |           |
+	----------------------------------------=========================
+	                                              source &lt;ea&gt;
+
+<B>REGISTER</B>
+	"ADDRESS REGISTER" specifies the number of destination address
+	register.
+
+	Source &lt;ea&gt; specifies source operand, addressing modes allowed are:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       |000 |N° reg. Dn| |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An *     |001 |N° reg. An| |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    |111 |  010   |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  |111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)|111 |  011   |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      |111 |  100   |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+	 * Word or Long only.
+
+<B>SIZE</B>
+	11-&gt;Word, 32 bits of address register are altered by sign extension.
+	10-&gt;Long
+
+<B>RESULT</B>
+	None.
+
+<B>SEE ALSO</B>
+	<a href="move.HTML">MOVE</a> <a href="lea.HTML">LEA </a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: movea.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:09 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

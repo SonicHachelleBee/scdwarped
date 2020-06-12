@@ -1,0 +1,33 @@
+<HTML>
+<TITLE>Illegal processor instruction</TITLE>
+<H1>Illegal processor instruction</H1>
+<pre>
+<B>NAME</B>
+	ILLEGAL -- Illegal processor instruction
+
+<B>SYNOPSIS</B>
+	ILLEGAL
+
+<B>FUNCTION</B>
+	This instruction forces an Illegal Instruction exception,
+	vector number 4. All other illegal instruction bit patterns,
+	including, but not limited to, $fxxx and $axxx, are reserved for
+	future expansion.
+        The Hexa-decimal code of this instruction is: $4AFC 
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+	| 0 | 1 | 0 | 0 | 1 | 0 | 1 | 0 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 |
+	-----------------------------------------------------------------
+
+<B>RESULT</B>
+	None.
+
+<B>SEE ALSO</B>
+	<a href="bkpt.HTML">BKPT</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: illegal.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:09 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

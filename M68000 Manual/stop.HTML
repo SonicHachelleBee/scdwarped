@@ -1,0 +1,39 @@
+<HTML>
+<TITLE>Stop processor execution (PRIVILEGED)</TITLE>
+<H1>Stop processor execution (PRIVILEGED)</H1>
+<pre>
+<B>NAME</B>
+	STOP -- Stop processor execution (PRIVILEGED)
+
+<B>SYNOPSIS</B>
+	STOP	#&lt;data:16&gt;
+
+<B>FUNCTION</B>
+	Immediate data is moved to SR. PC is set to next instruction,
+	and the processor stops fetch and execution of instruction.
+	Execution restarts if if a TRACE exception, an interruption, or
+	a RESET takes place.
+	When STOP is executed, a TRACE exception is generated (if T = 1).
+	An interruption is allowed if it level is higher than current one.
+	An external RESET always will generate a RESET exception.
+	If bit S is set to zero by the immediate data, execution of this
+	instruction will generate a "privilege violation".
+
+<B>FORMAT</B>
+	-----------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+	| 0 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 1 | 0 |
+	|---------------------------------------------------------------|
+	|                    16 BITS IMMEDIATE DATA                     |
+	-----------------------------------------------------------------
+
+<B>RESULT</B>
+	SR is set according to immediate data.
+
+<B>SEE ALSO</B>
+	<a href="reset.HTML">RESET</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: stop.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:12 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

@@ -1,0 +1,53 @@
+<HTML>
+<TITLE>Branch on CoProcessor condition</TITLE>
+<H1>Branch on CoProcessor condition</H1>
+<pre>
+<B>NAME</B>
+	cpBcc -- Branch on coprocessor condition
+
+<B>SYNOPSIS</B>
+	cpBcc	&lt;label&gt;
+
+	Offset size = (Word, Long)
+
+<B>FUNCTION</B>
+	If specified coprocessor condition is true, program execution
+	continues to address pointed by searching PC more offset.
+	Searching PC contains address of first word of offset. Offset is
+	a signed value of 16 or 32 bits, which represents the relative gap
+	in bytes between the searching PC and destination address.
+
+<B>FORMAT</B>
+	------------------------------------------------------------------
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6  | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|-----------|---|---|----|-----------------------|
+	| 1 | 1 | 1 | 1 | CP-ID =! 0| 0 | 1 |SIZE|COPROSSESSOR CONDITION |
+	|----------------------------------------------------------------|
+	|              OPTIONAL COPROCESSOR EXTENSION WORD               |
+	|----------------------------------------------------------------|
+	|                            16 BITS OFFSET                      |
+	|----------------------------------------------------------------|
+	|	        32 BITS OFFSET (LOW WEIGHT PART)                 |
+	------------------------------------------------------------------
+
+<B>SIZE</B>
+	0-&gt;one Word operation
+	1-&gt;one Long operation
+
+	CP-ID field identify coprocessor (1 to 7). If CP-ID=0,
+	"line emulation F" exception is generated.
+
+	"COPROSSESSOR CONDITION" field, specifies condition to test.
+	This condition is addressed to coprocessor which, after examining
+	this one, address directives to processor in order to execute
+	the instruction.
+
+<B>RESULT</B>
+	Not affected.
+
+<B>SEE ALSO</B>
+	<a href="cpdbcc.HTML">cpDBcc</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: cpbcc.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:08 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>

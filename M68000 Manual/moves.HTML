@@ -1,0 +1,84 @@
+<HTML>
+<TITLE>MOVE address Space (PRIVILEGED)</TITLE>
+<H1>MOVE address Space (PRIVILEGED)</H1>
+<pre>
+<B>NAME</B>
+	MOVES -- Move address space (PRIVILEGED)
+
+<B>SYNOPSIS</B>
+	MOVES	Rn,&lt;ea&gt;  (68010+)
+	MOVES	&lt;ea&gt;,Rn  (68010+)
+
+        Size = (Byte, Word, Long)
+
+<B>FUNCTION</B>
+        Moves contents (Byte, Word, Long) of register Rn to the addressed
+        space by effective address in the addressable space specified by DFC.
+
+	If destination is an address register, there's extension of operand
+	sign to 32 bits.
+
+<B>FORMAT</B>
+	                                                   &lt;ea&gt;
+	----------------------------------------=========================
+	|15 |14 |13 |12 |11 |10 | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 | 1 | 0 |
+	|---|---|---|---|---|---|---|---|-------|-----------|-----------|
+	| 0 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | SIZE  |   MODE    | REGISTER  |
+	|---|-----------|---|---|---|---|-------|-----------|-----------|
+	|A/D|Rn REGISTER|dr | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+	-----------------------------------------------------------------
+
+	A/D indicates type of Rn register:
+	0-&gt;Rn=Dn
+	1-&gt;Rn=An
+
+	"REGISTER" indicates the number of Rn register.
+
+	dr specifies direction of move:
+	0-&gt;memory to register.
+	1-&gt;register to memory.
+
+<B>SIZE</B>
+	00-&gt;Byte
+	01-&gt;Word
+	10-&gt;Long
+
+<B>REGISTER</B>
+	&lt;ea&gt; specifies place of source or destination, allowed addressing
+	modes are:
+	--------------------------------- -------------------------------
+	|Addressing Mode|Mode| Register | |Addressing Mode|Mode|Register|
+	|-------------------------------| |-----------------------------|
+	|      Dn       | -  |    -     | |    Abs.W      |111 |  000   |
+	|-------------------------------| |-----------------------------|
+	|      An       | -  |    -     | |    Abs.L      |111 |  001   |
+	|-------------------------------| |-----------------------------|
+	|     (An)      |010 |N° reg. An| |   (d16,PC)    | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|     (An)+     |011 |N° reg. An| |   (d8,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    -(An)      |100 |N° reg. An| |   (bd,PC,Xi)  | -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|    (d16,An)   |101 |N° reg. An| |([bd,PC,Xi],od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (d8,An,Xi)  |110 |N° reg. An| |([bd,PC],Xi,od)| -  |   -    |
+	|-------------------------------| |-----------------------------|
+	|   (bd,An,Xi)  |110 |N° reg. An| |    #data      | -  |   -    |
+	|-------------------------------| -------------------------------
+	|([bd,An,Xi]od) |110 |N° reg. An|
+	|-------------------------------|
+	|([bd,An],Xi,od)|110 |N° reg. An|
+	---------------------------------
+
+<B>RESULT</B>
+	None.
+
+<B>SEE ALSO</B>
+	<a href="movefromccr.HTML">MOVE from CCR</a> 	<a href="movetoccr.HTML">MOVE to CCR</a>
+	<a href="movefromsr.HTML">MOVE from SR</a>	<a href="movetosr.HTML">MOVE to SR</a>
+	<a href="moveusp.HTML">MOVE to/from USP</a>	<a href="movem.HTML">MOVEM</a>
+	<a href="movep.HTML">MOVEC</a>	<a href="movep.HTML">MOVEP</a>
+</pre>
+<HR>HTML Conversion by <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/Computer/Amiga/Perl/AG2HTML.pl"><i>AG2HTML.pl</i></a> V2.941126c, perl $RCSfile: moves.HTML,v $$Revision: 1.1 $$Date: 1999/09/14 21:14:10 $
+Patch level: 36
+ &amp; <a href="http://www.cs.cmu.edu:8001/Web/People/mjw/mjwhome.html"><i>witbrock@cs.cmu.edu</i></a>
