@@ -1,5 +1,6 @@
 ; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-; start of IPX___.MMD file
+; Start of IPX___.MMD file
+; This is the original and bit-perfect IPX___.MMD file disassembly for all regions.
 
 IPX_Header:
 	dc.l	$000000FF, $000003FF, IPX_RAM_Start, 0, 0, 0, 0, 0
@@ -23,20 +24,18 @@ IPX_Start:
 .loop:	move.l	#0,(a0)+
 	dbf	d7,.loop
 
-	moveq	#5,d0
-	bsr.w	IPX_loc_AF8
-	move.w	#$89,d0
-	bsr.w	IPX_loc_AF8
+	moveq	#unk_file_5,d0
+	bsr.w	IPX_LoadAndRunFile
+	move.w	#unk_file_89,d0
+	bsr.w	IPX_LoadAndRunFile
 
 	tst.b	d0
-	beq.s	IPX_loc_3A
+	beq.s	.skip
 	bset	#0,(IPX_unk_0F1F).l
-
-IPX_loc_3A:
-	bsr.w	IPX_loc_C08
+.skip:	bsr.w	IPX_LoadSavedData
 
 IPX_MainLoop:
-	move.w	#$86,d0
+	move.w	#unk_file_86,d0
 	bsr.w	IPX_loc_CE0
 
 	moveq	#0,d0
@@ -46,98 +45,99 @@ IPX_MainLoop:
 	move.b	d0,(IPX_unk_158E).l
 	move.w	d0,(IPX_unk_1512).l
 	move.l	d0,(IPX_unk_1514).l
-	move.b	d0,(IPX_GoodFuture_Flag).l
+	move.b	d0,(IPX_GoodFuture_ActFlag).l
 	move.b	d0,(IPX_unk_156D).l
-	move.b	#present,(IPX_TimeZone).l
+	move.b	#present,(IPX_CurrentTimeZone).l
 
-	moveq	#$B,d0
-	bsr.w	IPX_loc_AF8
+	moveq	#title_screen_file,d0
+	bsr.w	IPX_LoadAndRunFile
 	ext.w	d1
 	add.w	d1,d1
-	move.w	IPX_off_94(pc,d1.w),d1
-	jsr	IPX_off_94(pc,d1.w)
+	move.w	IPX_off_TitleSelection(pc,d1.w),d1
+	jsr	IPX_off_TitleSelection(pc,d1.w)
 	bra.s	IPX_MainLoop
 ; -----------------------------------------------------------------------------
-
-IPX_off_94:	offsetTable
-		offsetTableEntry.w IPX_loc_85E
-		offsetTableEntry.w IPX_loc_170
-		offsetTableEntry.w IPX_loc_FE
-		offsetTableEntry.w IPX_loc_A50
-		offsetTableEntry.w IPX_loc_B0
-		offsetTableEntry.w IPX_loc_A48
-		offsetTableEntry.w IPX_loc_9CA
-		offsetTableEntry.w IPX_loc_94A
-		offsetTableEntry.w IPX_loc_64E
-		offsetTableEntry.w IPX_loc_A8
+;IPX_off_94:
+IPX_off_TitleSelection:	offsetTable
+			offsetTableEntry.w IPX_StartDemo
+			offsetTableEntry.w IPX_NewGame
+			offsetTableEntry.w IPX_Continue
+			offsetTableEntry.w IPX_TimeAttack
+			offsetTableEntry.w IPX_RamData
+			offsetTableEntry.w IPX_DAGarden
+			offsetTableEntry.w IPX_VisualMode
+			offsetTableEntry.w IPX_SoundTest
+			offsetTableEntry.w IPX_LevelSelect
+			offsetTableEntry.w IPX_TeamRecords
 ; -----------------------------------------------------------------------------
-
-IPX_loc_A8:
-	move.w	#$CE,d0
-	bra.w	IPX_loc_AF8
+;IPX_loc_A8:
+IPX_TeamRecords:
+	move.w	#team_records_file,d0
+	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
-
-IPX_loc_B0:
-	move.w	#$8E,d0
-	bsr.w	IPX_loc_AF8
-	bsr.w	IPX_loc_C08
+;IPX_loc_B0:
+IPX_RamData:
+	move.w	#ram_data_file,d0
+	bsr.w	IPX_LoadAndRunFile
+	bsr.w	IPX_LoadSavedData
 	rts
 ; -----------------------------------------------------------------------------
+;IPX_loc_BE:
+IPX_SS1_Start:
+	move.b	#0,(IO_SpecialStageToLoad).l
+	move.b	#0,(IO_TimeStones_Array).l
+	bset	#0,(IO_SpecialStage_Flags).l
 
-IPX_loc_BE:
-	move.b	#0,(IO_unk_A12013).l
-	move.b	#0,(IO_unk_A1201A).l
-	bset	#0,(IO_unk_A1201B).l
-
-	moveq	#$75,d0
-	bsr.w	IPX_loc_AF8
+	moveq	#special_stage_file,d0
+	bsr.w	IPX_LoadAndRunFile
 	rts
 ; -----------------------------------------------------------------------------
+;IPX_loc_DE:
+IPX_SS6_Start:
+	move.b	#5,(IO_SpecialStageToLoad).l
+	move.b	#0,(IO_TimeStones_Array).l
+	bset	#0,(IO_SpecialStage_Flags).l
 
-IPX_loc_DE:
-	move.b	#5,(IO_unk_A12013).l
-	move.b	#0,(IO_unk_A1201A).l
-	bset	#0,(IO_unk_A1201B).l
-
-	moveq	#$75,d0
-	bsr.w	IPX_loc_AF8
+	moveq	#special_stage_file,d0
+	bsr.w	IPX_LoadAndRunFile
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_loc_FE:
-	bsr.w	IPX_loc_C08
-	move.w	(IPX_unk_0F02).l,(IPX_ZoneAndAct).l
+;IPX_loc_FE:
+IPX_Continue:
+	bsr.w	IPX_LoadSavedData
+	move.w	(IPX_CurrentZoneInSave).l,(IPX_CurrentZoneAndAct).l
 	move.b	#3,(IPX_unk_1508).l
 	move.b	#0,(IPX_unk_151C).l
 
-	cmpi.b	#palmtree_panic_zone,(IPX_ZoneAndAct).l
-	beq.w	IPX_loc_170
-	cmpi.b	#collision_chaos_zone,(IPX_ZoneAndAct).l
-	bls.w	IPX_loc_1DE
-	cmpi.b	#tidal_tempest_zone,(IPX_ZoneAndAct).l
-	bls.w	IPX_loc_226
-	cmpi.b	#quartz_quadrant_zone,(IPX_ZoneAndAct).l
-	bls.w	IPX_loc_25E
-	cmpi.b	#wacky_workbench_zone,(IPX_ZoneAndAct).l
-	bls.w	IPX_loc_296
-	cmpi.b	#stardust_speedway_zone,(IPX_ZoneAndAct).l
-	bls.w	IPX_loc_2CE
-	cmpi.b	#metallic_madness_zone,(IPX_ZoneAndAct).l
-	bls.w	IPX_loc_306
+	cmpi.b	#palmtree_panic_zone,(IPX_CurrentZoneAndAct).l
+	beq.w	IPX_NewGame
+	cmpi.b	#collision_chaos_zone,(IPX_CurrentZoneAndAct).l
+	bls.w	IPX_Continue_R3
+	cmpi.b	#tidal_tempest_zone,(IPX_CurrentZoneAndAct).l
+	bls.w	IPX_Continue_R4
+	cmpi.b	#quartz_quadrant_zone,(IPX_CurrentZoneAndAct).l
+	bls.w	IPX_Continue_R5
+	cmpi.b	#wacky_workbench_zone,(IPX_CurrentZoneAndAct).l
+	bls.w	IPX_Continue_R6
+	cmpi.b	#stardust_speedway_zone,(IPX_CurrentZoneAndAct).l
+	bls.w	IPX_Continue_R7
+	cmpi.b	#metallic_madness_zone,(IPX_CurrentZoneAndAct).l
+	bls.w	IPX_Continue_R8
 
-IPX_loc_170:
+;IPX_loc_170:
+IPX_NewGame:
 	moveq	#0,d0
 	move.b	d0,(IPX_unk_151C).l
-	move.w	d0,(IPX_ZoneAndAct).l
-	move.w	d0,(IPX_unk_0F02).l
-	move.b	d0,(IPX_unk_0F1A).l
+	move.w	d0,(IPX_CurrentZoneAndAct).l
+	move.w	d0,(IPX_CurrentZoneInSave).l
+	move.b	d0,(IPX_GoodFuture_Array).l
 	move.b	d0,(IPX_unk_0F21).l
-	move.b	d0,(IPX_unk_0F20).l
+	move.b	d0,(IPX_TimeStones_Array).l
 
-	bsr.w	IPX_loc_C76
-	bsr.w	IPX_loc_3CC
-	bsr.w	IPX_loc_3DC
-	bsr.w	IPX_loc_3EC
+	bsr.w	IPX_SaveData
+	bsr.w	IPX_LoadAndRun_R11
+	bsr.w	IPX_LoadAndRun_R12
+	bsr.w	IPX_LoadAndRun_R13
 
 	moveq	#3,d0
 	bsr.w	IPX_loc_5F8
@@ -146,267 +146,275 @@ IPX_loc_170:
 	bset	#5,(IPX_unk_0F1D).l
 	move.b	#0,(IPX_unk_158E).l
 	move.b	#0,(IPX_unk_156D).l
-	bclr	#0,(IPX_GoodFuture_Flag).l
-	beq.s	IPX_loc_1DE
-	bset	#0,(IPX_unk_0F1A).l
+	bclr	#0,(IPX_GoodFuture_ActFlag).l ; Good future in act 3?
+	beq.s	IPX_Continue_R3
+	bset	#0,(IPX_GoodFuture_Array).l
 
-IPX_loc_1DE:
-	bsr.w	IPX_loc_C76
+;IPX_loc_1DE:
+IPX_Continue_R3:
+	bsr.w	IPX_SaveData
 	move.b	#0,(IPX_unk_1577).l
-	bsr.w	IPX_loc_3FC
+	bsr.w	IPX_LoadAndRun_R31
 	move.b	#0,(IPX_unk_1577).l
-	bsr.w	IPX_loc_40C
-	bsr.w	IPX_loc_41C
+	bsr.w	IPX_LoadAndRun_R32
+	bsr.w	IPX_LoadAndRun_R33
 
 	moveq	#6,d0
 	bsr.w	IPX_loc_5F8
 
 	move.b	#0,(IPX_unk_158E).l
 	move.b	#0,(IPX_unk_156D).l
-	bclr	#0,(IPX_GoodFuture_Flag).l
-	beq.s	IPX_loc_226
-	bset	#1,(IPX_unk_0F1A).l
+	bclr	#0,(IPX_GoodFuture_ActFlag).l ; Good future in act 3?
+	beq.s	IPX_Continue_R4
+	bset	#1,(IPX_GoodFuture_Array).l
 
-IPX_loc_226:
-	bsr.w	IPX_loc_C76
-	bsr.w	IPX_loc_42C
-	bsr.w	IPX_loc_43C
-	bsr.w	IPX_loc_44C
+;IPX_loc_226:
+IPX_Continue_R4:
+	bsr.w	IPX_SaveData
+	bsr.w	IPX_LoadAndRun_R41
+	bsr.w	IPX_LoadAndRun_R42
+	bsr.w	IPX_LoadAndRun_R43
 
 	moveq	#9,d0
 	bsr.w	IPX_loc_5F8
 
 	move.b	#0,(IPX_unk_158E).l
 	move.b	#0,(IPX_unk_156D).l
-	bclr	#0,(IPX_GoodFuture_Flag).l
-	beq.s	IPX_loc_25E
-	bset	#2,(IPX_unk_0F1A).l
+	bclr	#0,(IPX_GoodFuture_ActFlag).l ; Good future in act 3?
+	beq.s	IPX_Continue_R5
+	bset	#2,(IPX_GoodFuture_Array).l
 
-IPX_loc_25E:
-	bsr.w	IPX_loc_C76
-	bsr.w	IPX_loc_45C
-	bsr.w	IPX_loc_46C
-	bsr.w	IPX_loc_47C
+;IPX_loc_25E:
+IPX_Continue_R5:
+	bsr.w	IPX_SaveData
+	bsr.w	IPX_LoadAndRun_R51
+	bsr.w	IPX_LoadAndRun_R52
+	bsr.w	IPX_LoadAndRun_R53
 
 	moveq	#12,d0
 	bsr.w	IPX_loc_5F8
 
 	move.b	#0,(IPX_unk_158E).l
 	move.b	#0,(IPX_unk_156D).l
-	bclr	#0,(IPX_GoodFuture_Flag).l
-	beq.s	IPX_loc_296
-	bset	#3,(IPX_unk_0F1A).l
+	bclr	#0,(IPX_GoodFuture_ActFlag).l ; Good future in act 3?
+	beq.s	IPX_Continue_R6
+	bset	#3,(IPX_GoodFuture_Array).l
 
-IPX_loc_296:
-	bsr.w	IPX_loc_C76
-	bsr.w	IPX_loc_48C
-	bsr.w	IPX_loc_49A
-	bsr.w	IPX_loc_4A8
+;IPX_loc_296:
+IPX_Continue_R6:
+	bsr.w	IPX_SaveData
+	bsr.w	IPX_LoadAndRun_R61
+	bsr.w	IPX_LoadAndRun_R62
+	bsr.w	IPX_LoadAndRun_R63
 
 	moveq	#15,d0
 	bsr.w	IPX_loc_5F8
 
 	move.b	#0,(IPX_unk_158E).l
 	move.b	#0,(IPX_unk_156D).l
-	bclr	#0,(IPX_GoodFuture_Flag).l
-	beq.s	IPX_loc_2CE
-	bset	#4,(IPX_unk_0F1A).l
+	bclr	#0,(IPX_GoodFuture_ActFlag).l ; Good future in act 3?
+	beq.s	IPX_Continue_R7
+	bset	#4,(IPX_GoodFuture_Array).l
 
-IPX_loc_2CE:
-	bsr.w	IPX_loc_C76
-	bsr.w	IPX_loc_4B8
-	bsr.w	IPX_loc_4C6
-	bsr.w	IPX_loc_4D4
+;IPX_loc_2CE:
+IPX_Continue_R7:
+	bsr.w	IPX_SaveData
+	bsr.w	IPX_LoadAndRun_R71
+	bsr.w	IPX_LoadAndRun_R72
+	bsr.w	IPX_LoadAndRun_R73
 
 	moveq	#18,d0
 	bsr.w	IPX_loc_5F8
 
 	move.b	#0,(IPX_unk_158E).l
 	move.b	#0,(IPX_unk_156D).l
-	bclr	#0,(IPX_GoodFuture_Flag).l
-	beq.s	IPX_loc_306
-	bset	#5,(IPX_unk_0F1A).l
+	bclr	#0,(IPX_GoodFuture_ActFlag).l ; Good future in act 3?
+	beq.s	IPX_Continue_R8
+	bset	#5,(IPX_GoodFuture_Array).l
 
-IPX_loc_306:
-	bsr.w	IPX_loc_C76
-	bsr.w	IPX_loc_4E4
-	bsr.w	IPX_loc_4F2
-	bsr.w	IPX_loc_500
+;IPX_loc_306:
+IPX_Continue_R8:
+	bsr.w	IPX_SaveData
+	bsr.w	IPX_LoadAndRun_R81
+	bsr.w	IPX_LoadAndRun_R82
+	bsr.w	IPX_LoadAndRun_R83
 
 	moveq	#21,d0
 	bsr.w	IPX_loc_5F8
 
 	move.b	#0,(IPX_unk_158E).l
 	move.b	#0,(IPX_unk_156D).l
-	bclr	#0,(IPX_GoodFuture_Flag).l
-	beq.s	IPX_loc_33E
-	bset	#6,(IPX_unk_0F1A).l
+	bclr	#0,(IPX_GoodFuture_ActFlag).l ; Good future in act 3?
+	beq.s	IPX_EndOfGame
+	bset	#6,(IPX_GoodFuture_Array).l
 
-IPX_loc_33E:
-	move.b	(IPX_unk_0F1A).l,(IPX_unk_03CA).l
-	move.b	(IPX_unk_0F20).l,(IPX_unk_03CB).l
-	bsr.w	IPX_loc_C76
+;IPX_loc_33E:
+IPX_EndOfGame:
+	move.b	(IPX_GoodFuture_Array).l,(IPX_static_GoodFuture_Array).l
+	move.b	(IPX_TimeStones_Array).l,(IPX_static_TimeStones_Array).l
+	bsr.w	IPX_SaveData
 
-	cmpi.b	#$7F,(IPX_unk_03CA).l
-	beq.s	IPX_loc_384
-	cmpi.b	#$7F,(IPX_unk_03CB).l
-	beq.s	IPX_loc_384
+	cmpi.b	#$7F,(IPX_static_GoodFuture_Array).l
+	beq.s	IPX_GoodEnding
+	cmpi.b	#$7F,(IPX_static_TimeStones_Array).l
+	beq.s	IPX_GoodEnding
 
-IPX_loc_36A:
+;IPX_loc_36A:
+IPX_BadEnding:
 	move.b	#0,(IPX_unk_0F24).l
-	move.w	#$93,d0
-	bsr.w	IPX_loc_AF8
-	tst.b	(IPX_unk_0BE3).l
-	bmi.s	IPX_loc_36A
+	move.w	#bad_ending_file,d0
+	bsr.w	IPX_LoadAndRunFile
+	tst.b	(IPX_static_unk_0BE3).l
+	bmi.s	IPX_BadEnding
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_loc_384:
+;IPX_loc_384:
+IPX_GoodEnding:
 	move.b	#$7F,(IPX_unk_0F24).l
 	move.w	#$94,d0
-	bsr.w	IPX_loc_AF8
-	tst.b	(IPX_unk_0BE3).l
-	bmi.s	IPX_loc_384
+	bsr.w	IPX_LoadAndRunFile
+	tst.b	(IPX_static_unk_0BE3).l
+	bmi.s	IPX_GoodEnding
 	rts
 ; -----------------------------------------------------------------------------
 
 IPX_loc_39E:
 	move.b	#0,(IPX_Act).l
-	move.w	(IPX_ZoneAndAct).l,(IPX_unk_0F02).l
+	move.w	(IPX_CurrentZoneAndAct).l,(IPX_CurrentZoneInSave).l
 
 	move.b	#0,(IPX_unk_158E).l
 	move.b	#0,(IPX_unk_156D).l
-	bclr	#0,(IPX_GoodFuture_Flag).l
+	bclr	#0,(IPX_GoodFuture_ActFlag).l
 	rts
 ; -----------------------------------------------------------------------------
 ; RAM variables inside executed code
 IPX_RAM_03CA:	dc.b	0
 IPX_RAM_03CB:	dc.b	0
 ; -----------------------------------------------------------------------------
-
-IPX_loc_3CC:
+;IPX_loc_3CC:
+IPX_LoadAndRun_R11:
 	lea	IPX_byte_608(pc),a0
-	move.w	#palmtree_panic_zone_act_1,(IPX_ZoneAndAct).l
+	move.w	#palmtree_panic_zone_act_1,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_loc_510
 ; -----------------------------------------------------------------------------
-
-IPX_loc_3DC:
+;IPX_loc_3DC:
+IPX_LoadAndRun_R12:
 	lea	IPX_byte_608+4(pc),a0
-	move.w	#palmtree_panic_zone_act_2,(IPX_ZoneAndAct).l
+	move.w	#palmtree_panic_zone_act_2,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_loc_510
 ; -----------------------------------------------------------------------------
-
-IPX_loc_3EC:
+;IPX_loc_3EC:
+IPX_LoadAndRun_R13:
 	lea	IPX_byte_608+8(pc),a0
-	move.w	#palmtree_panic_zone_act_3,(IPX_ZoneAndAct).l
+	move.w	#palmtree_panic_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_loc_5B4
 ; -----------------------------------------------------------------------------
-
-IPX_loc_3FC:
+;IPX_loc_3FC:
+IPX_LoadAndRun_R31:
 	lea	IPX_byte_612(pc),a0
-	move.w	#collision_chaos_zone_act_1,(IPX_ZoneAndAct).l
+	move.w	#collision_chaos_zone_act_1,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_loc_510
 ; -----------------------------------------------------------------------------
-
-IPX_loc_40C:
+;IPX_loc_40C:
+IPX_LoadAndRun_R32:
 	lea	IPX_byte_612+4(pc),a0
-	move.w	#collision_chaos_zone_act_2,(IPX_ZoneAndAct).l
+	move.w	#collision_chaos_zone_act_2,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_loc_510
 ; -----------------------------------------------------------------------------
-
-IPX_loc_41C:
+;IPX_loc_41C:
+IPX_LoadAndRun_R33:
 	lea	IPX_byte_612+8(pc),a0
-	move.w	#collision_chaos_zone_act_3,(IPX_ZoneAndAct).l
+	move.w	#collision_chaos_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_loc_5B4
 ; -----------------------------------------------------------------------------
-
-IPX_loc_42C:
+;IPX_loc_42C:
+IPX_LoadAndRun_R41:
 	lea	IPX_byte_61C(pc),a0
-	move.w	#tidal_tempest_zone_act_1,(IPX_ZoneAndAct).l
+	move.w	#tidal_tempest_zone_act_1,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_loc_510
 ; -----------------------------------------------------------------------------
-
-IPX_loc_43C:
+;IPX_loc_43C:
+IPX_LoadAndRun_R42:
 	lea	IPX_byte_61C+4(pc),a0
-	move.w	#tidal_tempest_zone_act_2,(IPX_ZoneAndAct).l
+	move.w	#tidal_tempest_zone_act_2,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_loc_510
 ; -----------------------------------------------------------------------------
-
-IPX_loc_44C:
+;IPX_loc_44C:
+IPX_LoadAndRun_R43:
 	lea	IPX_byte_61C+8(pc),a0
-	move.w	#tidal_tempest_zone_act_3,(IPX_ZoneAndAct).l
+	move.w	#tidal_tempest_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_loc_5B4
 ; -----------------------------------------------------------------------------
-
-IPX_loc_45C:
+;IPX_loc_45C:
+IPX_LoadAndRun_R51:
 	lea	IPX_byte_626(pc),a0
-	move.w	#quartz_quadrant_zone_act_1,(IPX_ZoneAndAct).l
+	move.w	#quartz_quadrant_zone_act_1,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_loc_510
 ; -----------------------------------------------------------------------------
-
-IPX_loc_46C:
+;IPX_loc_46C:
+IPX_LoadAndRun_R52:
 	lea	IPX_byte_626+4(pc),a0
-	move.w	#quartz_quadrant_zone_act_2,(IPX_ZoneAndAct).l
+	move.w	#quartz_quadrant_zone_act_2,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_loc_510
 ; -----------------------------------------------------------------------------
-
-IPX_loc_47C:
+;IPX_loc_47C:
+IPX_LoadAndRun_R53:
 	lea	IPX_byte_626+8(pc),a0
-	move.w	#quartz_quadrant_zone_act_3,(IPX_ZoneAndAct).l
+	move.w	#quartz_quadrant_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_loc_5B4
 ; -----------------------------------------------------------------------------
-
-IPX_loc_48C:
+;IPX_loc_48C:
+IPX_LoadAndRun_R61:
 	lea	IPX_byte_630(pc),a0
-	move.w	#wacky_workbench_zone_act_1,(IPX_ZoneAndAct).l
+	move.w	#wacky_workbench_zone_act_1,(IPX_CurrentZoneAndAct).l
 	bra.s	IPX_loc_510
 ; -----------------------------------------------------------------------------
-
-IPX_loc_49A:
+;IPX_loc_49A:
+IPX_LoadAndRun_R62:
 	lea	IPX_byte_630+4(pc),a0
-	move.w	#wacky_workbench_zone_act_2,(IPX_ZoneAndAct).l
+	move.w	#wacky_workbench_zone_act_2,(IPX_CurrentZoneAndAct).l
 	bra.s	IPX_loc_510
 ; -----------------------------------------------------------------------------
-
-IPX_loc_4A8:
+;IPX_loc_4A8:
+IPX_LoadAndRun_R63:
 	lea	IPX_byte_630+8(pc),a0
-	move.w	#wacky_workbench_zone_act_3,(IPX_ZoneAndAct).l
+	move.w	#wacky_workbench_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_loc_5B4
 ; -----------------------------------------------------------------------------
-
-IPX_loc_4B8:
+;IPX_loc_4B8:
+IPX_LoadAndRun_R71:
 	lea	IPX_byte_63A(pc),a0
-	move.w	#stardust_speedway_zone_act_1,(IPX_ZoneAndAct).l
+	move.w	#stardust_speedway_zone_act_1,(IPX_CurrentZoneAndAct).l
 	bra.s	IPX_loc_510
 ; -----------------------------------------------------------------------------
-
-IPX_loc_4C6:
+;IPX_loc_4C6:
+IPX_LoadAndRun_R72:
 	lea	IPX_byte_63A+4(pc),a0
-	move.w	#stardust_speedway_zone_act_2,(IPX_ZoneAndAct).l
+	move.w	#stardust_speedway_zone_act_2,(IPX_CurrentZoneAndAct).l
 	bra.s	IPX_loc_510
 ; -----------------------------------------------------------------------------
-
-IPX_loc_4D4:
+;IPX_loc_4D4:
+IPX_LoadAndRun_R73:
 	lea	IPX_byte_63A+8(pc),a0
-	move.w	#stardust_speedway_zone_act_3,(IPX_ZoneAndAct).l
+	move.w	#stardust_speedway_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_loc_5B4
 ; -----------------------------------------------------------------------------
-
-IPX_loc_4E4:
+;IPX_loc_4E4:
+IPX_LoadAndRun_R81:
 	lea	IPX_byte_644(pc),a0
-	move.w	#metallic_madness_zone_act_1,(IPX_ZoneAndAct).l
+	move.w	#metallic_madness_zone_act_1,(IPX_CurrentZoneAndAct).l
 	bra.s	IPX_loc_510
 ; -----------------------------------------------------------------------------
-
-IPX_loc_4F2:
+;IPX_loc_4F2:
+IPX_LoadAndRun_R82:
 	lea	IPX_byte_644+4(pc),a0
-	move.w	#metallic_madness_zone_act_2,(IPX_ZoneAndAct).l
+	move.w	#metallic_madness_zone_act_2,(IPX_CurrentZoneAndAct).l
 	bra.s	IPX_loc_510
 ; -----------------------------------------------------------------------------
-
-IPX_loc_500:
+;IPX_loc_500:
+IPX_LoadAndRun_R83:
 	lea	IPX_byte_644+8(pc),a0
-	move.w	#metallic_madness_zone_act_3,(IPX_ZoneAndAct).l
+	move.w	#metallic_madness_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_loc_5B4
 ; -----------------------------------------------------------------------------
 
@@ -415,16 +423,16 @@ IPX_loc_510:
 	_move.b	0(a0),d0
 
 IPX_loc_516:
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
 	tst.b	(IPX_unk_1508).l
 	beq.s	IPX_loc_55E
-	btst	#7,(IPX_TimeZone).l
+	btst	#7,(IPX_CurrentTimeZone).l
 	beq.s	IPX_loc_55E
 
 	moveq	#$C,d0
-	bsr.w	IPX_loc_AF8
-	move.b	(IPX_TimeZone).l,d1
+	bsr.w	IPX_LoadAndRunFile
+	move.b	(IPX_CurrentTimeZone).l,d1
 
 	moveq	#0,d0
 	move.b	1(a0),d0
@@ -436,7 +444,7 @@ IPX_loc_516:
 	beq.s	IPX_loc_516
 
 	move.b	3(a0),d0
-	tst.b	(IPX_GoodFuture_Flag).l
+	tst.b	(IPX_GoodFuture_ActFlag).l
 	beq.s	IPX_loc_516
 
 	move.b	2(a0),d0
@@ -457,17 +465,17 @@ IPX_loc_56C:
 ; -----------------------------------------------------------------------------
 
 IPX_loc_576:
-	move.b	(IPX_unk_0F21).l,(IO_unk_A12013).l
-	move.b	(IPX_unk_0F20).l,(IO_unk_A1201A).l
-	bclr	#0,(IO_unk_A1201B).l
+	move.b	(IPX_unk_0F21).l,(IO_SpecialStageToLoad).l
+	move.b	(IPX_TimeStones_Array).l,(IO_TimeStones_Array).l
+	bclr	#0,(IO_SpecialStage_Flags).l
 
 	moveq	#$75,d0
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
 	move.b	#1,(IPX_unk_0F22).l
-	cmpi.b	#$7F,(IPX_unk_0F20).l
+	cmpi.b	#$7F,(IPX_TimeStones_Array).l
 	bne.s	IPX_loc_5B2
-	move.b	#good_future,(IPX_GoodFuture_Flag).l
+	move.b	#good_future,(IPX_GoodFuture_ActFlag).l
 
 IPX_loc_5B2:
 	rts
@@ -477,12 +485,12 @@ IPX_loc_5B4:
 	moveq	#0,d0
 
 	_move.b	0(a0),d0
-	tst.b	(IPX_GoodFuture_Flag).l
+	tst.b	(IPX_GoodFuture_ActFlag).l
 	bne.s	IPX_loc_5C6
 	move.b	1(a0),d0
 
 IPX_loc_5C6:
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
 	tst.b	(IPX_unk_1508).l
 	bne.s	IPX_loc_5D8
@@ -492,10 +500,10 @@ IPX_loc_5C6:
 ; -----------------------------------------------------------------------------
 
 IPX_loc_5D8:
-	addq.b	#1,(IPX_unk_0F02).l
-	cmpi.b	#7,(IPX_unk_0F02).l
+	addq.b	#1,(IPX_CurrentZoneInSave).l
+	cmpi.b	#7,(IPX_CurrentZoneInSave).l
 	bcs.s	IPX_loc_5EE
-	subq.b	#1,(IPX_unk_0F02).l
+	subq.b	#1,(IPX_CurrentZoneInSave).l
 
 IPX_loc_5EE:
 	move.b	#0,(IPX_unk_158E).l
@@ -532,21 +540,21 @@ IPX_byte_63A:
 IPX_byte_644:
 	ipx_608_macro	$5C, $5D, $5E, $5F,   $60, $61, $62, $63,   $64, $65
 ; -----------------------------------------------------------------------------
-
-IPX_loc_64E:
+;IPX_loc_64E:
+IPX_LevelSelect:
 	moveq	#6,d0
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
 	mulu.w	#6,d0
-	move.w	IPX_byte_68A+2(pc,d0.w),(IPX_ZoneAndAct).l
-	move.b	IPX_byte_68A+4(pc,d0.w),(IPX_TimeZone).l
-	move.b	IPX_byte_68A+5(pc,d0.w),(IPX_GoodFuture_Flag).l
+	move.w	IPX_byte_68A+2(pc,d0.w),(IPX_CurrentZoneAndAct).l
+	move.b	IPX_byte_68A+4(pc,d0.w),(IPX_CurrentTimeZone).l
+	move.b	IPX_byte_68A+5(pc,d0.w),(IPX_GoodFuture_ActFlag).l
 	move.w	IPX_byte_68A(pc,d0.w),d0
 	move.b	#0,(IPX_unk_156D).l
 
 	cmpi.w	#$75,d0
-	beq.w	IPX_loc_BE
-	bsr.w	IPX_loc_AF8
+	beq.w	IPX_SS1_Start
+	bsr.w	IPX_LoadAndRunFile
 	rts
 ; -----------------------------------------------------------------------------
 
@@ -637,8 +645,8 @@ IPX_byte_68A:
 	ipx_68A_macro	    1,                            0,       1,           0
 	ipx_68A_macro	    1,                            0,       1,           0
 ; -----------------------------------------------------------------------------
-
-IPX_loc_85E:
+;IPX_loc_85E:
+IPX_StartDemo:
 	moveq	#5,d1
 	lea	(IPX_unk_0F1C).l,a6
 	moveq	#0,d0
@@ -665,12 +673,12 @@ IPX_off_87E:	offsetTable
 
 IPX_loc_88A:
 	move.b	#0,(IPX_unk_151C).l
-	move.w	#palmtree_panic_zone_act_1,(IPX_ZoneAndAct).l
-	move.b	#present,(IPX_TimeZone).l
-	move.b	#bad_future,(IPX_GoodFuture_Flag).l
+	move.w	#palmtree_panic_zone_act_1,(IPX_CurrentZoneAndAct).l
+	move.b	#present,(IPX_CurrentTimeZone).l
+	move.b	#bad_future,(IPX_GoodFuture_ActFlag).l
 
 	move.w	#$84,d0
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
 	move.w	#0,(IPX_unk_1580).l
 	rts
@@ -678,12 +686,12 @@ IPX_loc_88A:
 
 IPX_loc_8BC:
 	move.b	#0,(IPX_unk_151C).l
-	move.w	#tidal_tempest_zone_act_3,(IPX_ZoneAndAct).l
-	move.b	#future,(IPX_TimeZone).l
-	move.b	#good_future,(IPX_GoodFuture_Flag).l
+	move.w	#tidal_tempest_zone_act_3,(IPX_CurrentZoneAndAct).l
+	move.b	#future,(IPX_CurrentTimeZone).l
+	move.b	#good_future,(IPX_GoodFuture_ActFlag).l
 
 	move.w	#$24,d0
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
 	move.w	#0,(IPX_unk_1580).l
 	rts
@@ -691,12 +699,12 @@ IPX_loc_8BC:
 
 IPX_loc_8EE:
 	move.b	#0,(IPX_unk_151C).l
-	move.w	#metallic_madness_zone_act_2,(IPX_ZoneAndAct).l
-	move.b	#present,(IPX_TimeZone).l
-	move.b	#bad_future,(IPX_GoodFuture_Flag).l
+	move.w	#metallic_madness_zone_act_2,(IPX_CurrentZoneAndAct).l
+	move.b	#present,(IPX_CurrentTimeZone).l
+	move.b	#bad_future,(IPX_GoodFuture_ActFlag).l
 
 	move.w	#$25,d0
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
 	move.w	#0,(IPX_unk_1580).l
 	rts
@@ -705,26 +713,26 @@ IPX_loc_8EE:
 IPX_loc_920:
 	move.w	#$8A,d0
 	bsr.w	IPX_loc_CE0
-	bra.w	IPX_loc_BE
+	bra.w	IPX_SS1_Start
 ; -----------------------------------------------------------------------------
 
 IPX_loc_92C:
 	move.w	#$8A,d0
 	bsr.w	IPX_loc_CE0
-	bra.w	IPX_loc_DE
+	bra.w	IPX_SS6_Start
 ; -----------------------------------------------------------------------------
 
 IPX_loc_938:
 	move.w	#$D7,d0
-	bsr.w	IPX_loc_AF8
-	tst.b	(IPX_unk_0BE3).l
+	bsr.w	IPX_LoadAndRunFile
+	tst.b	(IPX_static_unk_0BE3).l
 	bmi.s	IPX_loc_938
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_loc_94A:
+;IPX_loc_94A:
+IPX_SoundTest:
 	moveq	#$26,d0
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
 	add.w	d0,d0
 	move.w	IPX_off_95A(pc,d0.w),d0
@@ -746,19 +754,19 @@ IPX_loc_968:
 ; -----------------------------------------------------------------------------
 
 IPX_loc_96A:
-	move.b	#7,(IO_unk_A12013).l
-	move.b	#0,(IO_unk_A1201A).l
-	bset	#0,(IO_unk_A1201B).l
-	bset	#2,(IO_unk_A1201B).l
+	move.b	#7,(IO_SpecialStageToLoad).l
+	move.b	#0,(IO_TimeStones_Array).l
+	bset	#0,(IO_SpecialStage_Flags).l
+	bset	#2,(IO_SpecialStage_Flags).l
 
 	moveq	#$75,d0
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
 	tst.b	(IPX_unk_0F25).l
 	bne.s	IPX_loc_9A0
 
 	move.w	#$C9,d0
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
 IPX_loc_9A0:
 	rts
@@ -766,32 +774,32 @@ IPX_loc_9A0:
 
 IPX_loc_9A2:
 	move.w	#$C8,d0
-	bra.w	IPX_loc_AF8
+	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
 
 IPX_loc_9AA:
 	move.w	#$CA,d0
-	bra.w	IPX_loc_AF8
+	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
 
 IPX_loc_9B2:
 	move.w	#$CB,d0
-	bra.w	IPX_loc_AF8
+	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
 
 IPX_loc_9BA:
 	move.w	#$CC,d0
-	bra.w	IPX_loc_AF8
+	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
 
 IPX_loc_9C2:
 	move.w	#$CD,d0
-	bra.w	IPX_loc_AF8
+	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
-
-IPX_loc_9CA:
+;IPX_loc_9CA:
+IPX_VisualMode:
 	move.w	#$85,d0
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
 	add.w	d0,d0
 	move.w	IPX_off_9DC(pc,d0.w),d0
@@ -808,11 +816,11 @@ IPX_off_9DC:	offsetTable
 
 IPX_loc_9E6:
 	move.w	#$D7,d0
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_unk_0BE3).l
+	tst.b	(IPX_static_unk_0BE3).l
 	bmi.s	IPX_loc_9E6
-	bra.s	IPX_loc_9CA
+	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
 
 IPX_loc_9F8:
@@ -821,44 +829,44 @@ IPX_loc_9F8:
 
 IPX_loc_9FA:
 	move.w	#$D4,d0
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_unk_0BE3).l
+	tst.b	(IPX_static_unk_0BE3).l
 	bmi.s	IPX_loc_9FA
-	bra.s	IPX_loc_9CA
+	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
 
 IPX_loc_A0C:
 	move.b	#$7F,(IPX_unk_0F24).l
 	move.w	#$94,d0
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_unk_0BE3).l
+	tst.b	(IPX_static_unk_0BE3).l
 	bmi.s	IPX_loc_A0C
 
 	move.w	#$8D,d0
-	bsr.w	IPX_loc_AF8
-	bra.s	IPX_loc_9CA
+	bsr.w	IPX_LoadAndRunFile
+	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
 
 IPX_loc_A2E:
 	move.b	#0,(IPX_unk_0F24).l
 	move.w	#$93,d0
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_unk_0BE3).l
+	tst.b	(IPX_static_unk_0BE3).l
 	bmi.s	IPX_loc_A2E
-	bra.s	IPX_loc_9CA
+	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
-
-IPX_loc_A48:
+;IPX_loc_A48:
+IPX_DAGarden:
 	move.w	#$81,d0
-	bra.w	IPX_loc_AF8
+	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
-
-IPX_loc_A50:
+;IPX_loc_A50:
+IPX_TimeAttack:
 	moveq	#$D,d0
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
 	move.w	d0,(IPX_unk_0F14).l
 	beq.w	IPX_loc_AB2
@@ -868,18 +876,18 @@ IPX_loc_A50:
 
 	mulu.w	#6,d0
 	lea	IPX_byte_68A(pc),a6
-	move.w	2(a6,d0.w),(IPX_ZoneAndAct).l
-	move.b	4(a6,d0.w),(IPX_TimeZone).l
-	move.b	5(a6,d0.w),(IPX_GoodFuture_Flag).l
+	move.w	2(a6,d0.w),(IPX_CurrentZoneAndAct).l
+	move.b	4(a6,d0.w),(IPX_CurrentTimeZone).l
+	move.b	5(a6,d0.w),(IPX_GoodFuture_ActFlag).l
 	move.w	(a6,d0.w),d0
 
 	move.b	#1,(IPX_unk_0F01).l
 	move.b	#0,(IPX_unk_156D).l
-	bsr.w	IPX_loc_AF8
+	bsr.w	IPX_LoadAndRunFile
 
 	move.b	#0,(IPX_unk_158E).l
 	move.l	(IPX_unk_1514).l,(IPX_unk_0F10).l
-	bra.s	IPX_loc_A50
+	bra.s	IPX_TimeAttack
 ; -----------------------------------------------------------------------------
 
 IPX_loc_AB2:
@@ -897,16 +905,16 @@ IPX_loc_AD2:
 	neg.b	d0
 	ext.w	d0
 	subq.w	#1,d0
-	move.b	d0,(IO_unk_A12013).l
-	move.b	#0,(IO_unk_A1201A).l
-	bset	#1,(IO_unk_A1201B).l
+	move.b	d0,(IO_SpecialStageToLoad).l
+	move.b	#0,(IO_TimeStones_Array).l
+	bset	#1,(IO_SpecialStage_Flags).l
 
 	moveq	#$75,d0
-	bsr.w	IPX_loc_AF8
-	bra.w	IPX_loc_A50
+	bsr.w	IPX_LoadAndRunFile
+	bra.w	IPX_TimeAttack
 ; -----------------------------------------------------------------------------
-
-IPX_loc_AF8:
+;IPX_loc_AF8:
+IPX_LoadAndRunFile:
 	move.l	a0,-(sp)
 	move.w	d0,(IO_unk_A12010).l
 
@@ -970,7 +978,7 @@ IPX_loc_B86:
 
 	jsr	(a0)
 
-	move.b	d0,(IPX_unk_0BE3).l
+	move.b	d0,(IPX_static_unk_0BE3).l
 	bsr.w	IPX_loc_D30
 
 	move.b	#$E0,(IO_unk_A01C0A).l
@@ -1003,17 +1011,17 @@ IPX_int_BE4:
 IPX_int_C06:
 	rte
 ; -----------------------------------------------------------------------------
-
-IPX_loc_C08:
+;IPX_loc_C08:
+IPX_LoadSavedData:
 	bsr.w	IPX_loc_C58
 
-	move.w	(MMD_unk_2002A4).l,(IPX_unk_0F02).l
-	move.b	(MMD_unk_2002A7).l,(IPX_unk_0F1A).l
+	move.w	(MMD_unk_2002A4).l,(IPX_CurrentZoneInSave).l
+	move.b	(MMD_unk_2002A7).l,(IPX_GoodFuture_Array).l
 	move.b	(MMD_unk_2002A8).l,(IPX_unk_0F1D).l
 	move.b	(MMD_unk_2002A5).l,(IPX_unk_0F18).l
 	move.b	(MMD_unk_2002A6).l,(IPX_unk_0F19).l
 	move.b	(MMD_unk_2002AC).l,(IPX_unk_0F21).l
-	move.b	(MMD_unk_2002AD).l,(IPX_unk_0F20).l
+	move.b	(MMD_unk_2002AD).l,(IPX_TimeStones_Array).l
 	bsr.w	IPX_loc_D1C
 	rts
 ; -----------------------------------------------------------------------------
@@ -1030,17 +1038,17 @@ IPX_loc_C6E:
 	bsr.w	IPX_loc_CE0
 	bra.w	IPX_loc_D10
 ; -----------------------------------------------------------------------------
-
-IPX_loc_C76:
+;IPX_loc_C76:
+IPX_SaveData:
 	bsr.s	IPX_loc_C58
 
-	move.w	(IPX_unk_0F02).l,(MMD_unk_2002A4).l
-	move.b	(IPX_unk_0F1A).l,(MMD_unk_2002A7).l
+	move.w	(IPX_CurrentZoneInSave).l,(MMD_unk_2002A4).l
+	move.b	(IPX_GoodFuture_Array).l,(MMD_unk_2002A7).l
 	move.b	(IPX_unk_0F1D).l,(MMD_unk_2002A8).l
 	move.b	(IPX_unk_0F18).l,(MMD_unk_2002A5).l
 	move.b	(IPX_unk_0F19).l,(MMD_unk_2002A6).l
 	move.b	(IPX_unk_0F21).l,(MMD_unk_2002AC).l
-	move.b	(IPX_unk_0F20).l,(MMD_unk_2002AD).l
+	move.b	(IPX_TimeStones_Array).l,(MMD_unk_2002AD).l
 	bsr.w	IPX_loc_D1C
 
 	move.w	#$8C,d0
@@ -1142,5 +1150,5 @@ IPX_RAM_0DA6:	dc.w	0
 ; end of IPX___.MMD file
 IPX_End:
 	if IPX_End-IPX_Start > $F00	; Maximum code size allowed for this file.
-		fatal "IPX___.MMD maximum code size reached!"
+		fatal "IPX___.MMD maximum code size reached! (> $F00)"
 	endif

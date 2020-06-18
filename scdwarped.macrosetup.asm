@@ -241,28 +241,3 @@ lea_ macro address,reg
 		!lea (address).l,reg
 	endif
     endm
-
-	; this even will only exist in REV02 (unnecessary)
-rev02even macro
-	if gameRevision=2
-		even
-	endif
-    endm
-
-    ; depending on if removeJmpTos is set or not, these macros will create a jump directly
-    ; to the destination, or create a branch to a JmpTo
-jsrto macro directaddr, indirectaddr
-	if removeJmpTos
-		!jsr directaddr	; jump directly to address
-	else
-		!bsr.w indirectaddr	; otherwise, branch to an indirect JmpTo
-	endif
-    endm
-
-jmpto macro directaddr, indirectaddr
-	if removeJmpTos
-		!jmp directaddr	; jump directly to address
-	else
-		!bra.w indirectaddr	; otherwise, branch to an indirect JmpTo
-	endif
-    endm

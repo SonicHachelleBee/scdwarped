@@ -1,5 +1,10 @@
 @ECHO OFF
 
+REM // ask to uncompress archives of iso files
+IF NOT EXIST "Sonic CD (J)\Sonic CD (J).iso" goto LABLERROR6
+IF NOT EXIST "Sonic CD (U)\Sonic CD (U).iso" goto LABLERROR7
+IF NOT EXIST "Sonic CD (E)\Sonic CD (E).iso" goto LABLERROR8
+
 REM // make sure we can write to the file scdbuilt.iso
 REM // also make a backup to scdbuilt.prev.iso
 IF NOT EXIST scdbuilt.iso goto LABLNOCOPY
@@ -57,14 +62,6 @@ IF NOT EXIST scdwarped.p goto LABLERROR5
 REM // combine the assembler output into an iso
 "win32/s2p2bin" %s2p2bin_args% scdwarped.p scdbuilt.iso scdwarped.h
 
-REM // fix some pointers and things that are impossible to fix from the assembler without un-splitting their data
-REM // Not used in Sonic CD Warped so far
-REM IF EXIST scdbuilt.iso "win32/fixpointer" scdwarped.h scdbuilt.iso   off_3A294 MapRUnc_Sonic $2D 0 4   word_728C_user Obj5F_MapUnc_7240 2 2 1  
-
-REM REM // fix the iso header (checksum)
-REM // Not used in Sonic CD Warped so far
-REM IF EXIST scdbuilt.iso "win32/fixheader" scdbuilt.iso
-
 REM // if there were errors/warnings, a log file is produced
 IF EXIST scdwarped.log goto LABLERROR4
 
@@ -121,4 +118,20 @@ echo **********************************************************************
 echo.
 pause
 
+exit /b
 
+:LABLERROR6
+echo Please, uncompress "Sonic CD (J)\Sonic CD (J).7z" before proceeding.
+pause
+
+exit /b
+
+:LABLERROR7
+echo Please, uncompress "Sonic CD (U)\Sonic CD (U).7z" before proceeding.
+pause
+
+exit /b
+
+:LABLERROR8
+echo Please, uncompress "Sonic CD (E)\Sonic CD (E).7z" before proceeding.
+pause

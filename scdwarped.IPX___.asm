@@ -1,5 +1,6 @@
 ; >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-; start of IPX___.MMD file (hacked for Sonic CD with random timezones)
+; Start of IPX___.MMD file
+; This is the hacked version for Sonic CD Warped.
 
 IPX_Header:
 	dc.l	$000000FF, $000003FF, IPX_RAM_Start, 0, 0, 0, 0, 0
@@ -24,16 +25,14 @@ IPX_Start:
 	dbf	d7,.loop
 
 	moveq	#unk_file_5,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 	move.w	#unk_file_89,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
 	tst.b	d0
-	beq.s	IPX_loc_3A
+	beq.s	.skip
 	bset	#0,(IPX_unk_0F1F).l
-
-IPX_loc_3A:
-	bsr.w	IPX_LoadGame
+.skip:	bsr.w	IPX_LoadSavedData
 
 IPX_MainLoop:
 	move.w	#unk_file_86,d0
@@ -46,13 +45,13 @@ IPX_MainLoop:
 	move.b	d0,(IPX_unk_158E).l
 	move.w	d0,(IPX_unk_1512).l
 	move.l	d0,(IPX_unk_1514).l
-	move.b	d0,(IPX_GoodFuture_Flag).l
+	move.b	d0,(IPX_GoodFuture_ActFlag).l
 	move.b	d0,(IPX_unk_156D).l
-	move.b	d0,(IPX_RunFile_Flag).l
-	move.b	#present,(IPX_TimeZone).l
+	move.b	d0,(IPX_PreviousGameMode).l
+	move.b	#present,(IPX_CurrentTimeZone).l
 
 	moveq	#title_screen_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 	ext.w	d1
 	add.w	d1,d1
 	move.w	IPX_off_TitleSelection(pc,d1.w),d1
@@ -75,238 +74,241 @@ IPX_off_TitleSelection:	offsetTable
 ; IPX_loc_A8:
 IPX_TeamRecords:
 	move.w	#team_records_file,d0
-	bra.w	IPX_RunFile
+	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
 ; IPX_loc_B0:
 IPX_RamData:
 	move.w	#ram_data_file,d0
-	bsr.w	IPX_RunFile
-	bsr.w	IPX_LoadGame
+	bsr.w	IPX_LoadAndRunFile
+	bsr.w	IPX_LoadSavedData
 	rts
 ; -----------------------------------------------------------------------------
 ; IPX_loc_BE:
 IPX_SS1_Start:
-	move.b	#0,(IO_unk_A12013).l
-	move.b	#0,(IO_unk_A1201A).l
-	bset	#0,(IO_unk_A1201B).l
+	move.b	#0,(IO_SpecialStageToLoad).l
+	move.b	#0,(IO_TimeStones_Array).l
+	bset	#0,(IO_SpecialStage_Flags).l
 
 	moveq	#special_stage_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 	rts
 ; -----------------------------------------------------------------------------
 ; IPX_loc_DE:
 IPX_SS6_Start:
-	move.b	#5,(IO_unk_A12013).l
-	move.b	#0,(IO_unk_A1201A).l
-	bset	#0,(IO_unk_A1201B).l
+	move.b	#5,(IO_SpecialStageToLoad).l
+	move.b	#0,(IO_TimeStones_Array).l
+	bset	#0,(IO_SpecialStage_Flags).l
 
 	moveq	#special_stage_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 	rts
 ; -----------------------------------------------------------------------------
 ; IPX_loc_FE:
 IPX_Continue:
-	bset	#0,(IPX_RunFile_Flag).l
+	bset	#0,(IPX_PreviousGameMode).l
 
-	bsr.w	IPX_LoadGame
-	move.w	(IPX_unk_0F02).l,(IPX_ZoneAndAct).l
+	bsr.w	IPX_LoadSavedData
+	move.w	(IPX_CurrentZoneInSave).l,(IPX_CurrentZoneAndAct).l
 	move.b	#3,(IPX_unk_1508).l
 	move.b	#0,(IPX_unk_151C).l
 
-	cmpi.b	#palmtree_panic_zone,(IPX_ZoneAndAct).l
+	cmpi.b	#palmtree_panic_zone,(IPX_CurrentZoneAndAct).l
 	beq.w	IPX_NewGame
-	cmpi.b	#collision_chaos_zone,(IPX_ZoneAndAct).l
+	cmpi.b	#collision_chaos_zone,(IPX_CurrentZoneAndAct).l
 	bls.w	IPX_Continue_R3
-	cmpi.b	#tidal_tempest_zone,(IPX_ZoneAndAct).l
+	cmpi.b	#tidal_tempest_zone,(IPX_CurrentZoneAndAct).l
 	bls.w	IPX_Continue_R4
-	cmpi.b	#quartz_quadrant_zone,(IPX_ZoneAndAct).l
+	cmpi.b	#quartz_quadrant_zone,(IPX_CurrentZoneAndAct).l
 	bls.w	IPX_Continue_R5
-	cmpi.b	#wacky_workbench_zone,(IPX_ZoneAndAct).l
+	cmpi.b	#wacky_workbench_zone,(IPX_CurrentZoneAndAct).l
 	bls.w	IPX_Continue_R6
-	cmpi.b	#stardust_speedway_zone,(IPX_ZoneAndAct).l
+	cmpi.b	#stardust_speedway_zone,(IPX_CurrentZoneAndAct).l
 	bls.w	IPX_Continue_R7
-	cmpi.b	#metallic_madness_zone,(IPX_ZoneAndAct).l
+	cmpi.b	#metallic_madness_zone,(IPX_CurrentZoneAndAct).l
 	bls.w	IPX_Continue_R8
 
 ; IPX_loc_170:
 IPX_NewGame:
-	bset	#0,(IPX_RunFile_Flag).l
+	bset	#0,(IPX_PreviousGameMode).l
 
 	moveq	#0,d0
 	move.b	d0,(IPX_unk_151C).l
-	move.w	d0,(IPX_ZoneAndAct).l
-	move.w	d0,(IPX_unk_0F02).l
+	move.w	d0,(IPX_CurrentZoneAndAct).l
+	move.w	d0,(IPX_CurrentZoneInSave).l
 	move.b	d0,(IPX_GoodFuture_Array).l
 	move.b	d0,(IPX_unk_0F21).l
 	move.b	d0,(IPX_TimeStones_Array).l
 
-	bsr.w	IPX_SaveGame
-	bsr.w	IPX_loc_3CC
-	bsr.w	IPX_loc_3DC
-	bsr.w	IPX_loc_3EC
+	bsr.w	IPX_SaveData
+	bsr.w	IPX_LoadAndRun_R11
+	bsr.w	IPX_LoadAndRun_R12
+	bsr.w	IPX_LoadAndRun_R13
 
 	moveq	#3,d0
-	bsr.w	IPX_EndOfZone_Cleanup
+	bsr.w	IPX_ZoneCleanup
 	bne.s	.skip
 	bset	#0,(IPX_GoodFuture_Array).l
-
 .skip:	bset	#6,(IPX_unk_0F1D).l
 	bset	#5,(IPX_unk_0F1D).l
 
 ; IPX_loc_1DE:
 IPX_Continue_R3:
-	bsr.w	IPX_SaveGame
+	bsr.w	IPX_SaveData
 	move.b	#0,(IPX_unk_1577).l
-	bsr.w	IPX_loc_3FC
+	bsr.w	IPX_LoadAndRun_R31
 	move.b	#0,(IPX_unk_1577).l
-	bsr.w	IPX_loc_40C
-	bsr.w	IPX_loc_41C
+	bsr.w	IPX_LoadAndRun_R32
+	bsr.w	IPX_LoadAndRun_R33
 
 	moveq	#6,d0
-	bsr.w	IPX_EndOfZone_Cleanup
+	bsr.w	IPX_ZoneCleanup
 	bne.s	IPX_Continue_R4
 	bset	#1,(IPX_GoodFuture_Array).l
 
 ; IPX_loc_226:
 IPX_Continue_R4:
-	bsr.w	IPX_SaveGame
-	bsr.w	IPX_loc_42C
-	bsr.w	IPX_loc_43C
-	bsr.w	IPX_loc_44C
+	bsr.w	IPX_SaveData
+	bsr.w	IPX_LoadAndRun_R41
+	bsr.w	IPX_LoadAndRun_R42
+	bsr.w	IPX_LoadAndRun_R43
 
 	moveq	#9,d0
-	bsr.w	IPX_EndOfZone_Cleanup
+	bsr.w	IPX_ZoneCleanup
 	bne.s	IPX_Continue_R5
 	bset	#2,(IPX_GoodFuture_Array).l
 
 ; IPX_loc_25E:
 IPX_Continue_R5:
-	bsr.w	IPX_SaveGame
-	bsr.w	IPX_loc_45C
-	bsr.w	IPX_loc_46C
-	bsr.w	IPX_loc_47C
+	bsr.w	IPX_SaveData
+	bsr.w	IPX_LoadAndRun_R51
+	bsr.w	IPX_LoadAndRun_R52
+	bsr.w	IPX_LoadAndRun_R53
 
 	moveq	#12,d0
-	bsr.w	IPX_EndOfZone_Cleanup
+	bsr.w	IPX_ZoneCleanup
 	bne.s	IPX_Continue_R6
 	bset	#3,(IPX_GoodFuture_Array).l
 
 ; IPX_loc_296:
 IPX_Continue_R6:
-	bsr.w	IPX_SaveGame
-	bsr.w	IPX_loc_48C
-	bsr.w	IPX_loc_49A
-	bsr.w	IPX_loc_4A8
+	bsr.w	IPX_SaveData
+	bsr.w	IPX_LoadAndRun_R61
+	bsr.w	IPX_LoadAndRun_R62
+	bsr.w	IPX_LoadAndRun_R63
 
 	moveq	#15,d0
-	bsr.w	IPX_EndOfZone_Cleanup
+	bsr.w	IPX_ZoneCleanup
 	bne.s	IPX_Continue_R7
 	bset	#4,(IPX_GoodFuture_Array).l
 
 ; IPX_loc_2CE:
 IPX_Continue_R7:
-	bsr.w	IPX_SaveGame
-	bsr.w	IPX_loc_4B8
-	bsr.w	IPX_loc_4C6
-	bsr.w	IPX_loc_4D4
+	bsr.w	IPX_SaveData
+	bsr.w	IPX_LoadAndRun_R71
+	bsr.w	IPX_LoadAndRun_R72
+	bsr.w	IPX_LoadAndRun_R73
 
 	moveq	#18,d0
-	bsr.w	IPX_EndOfZone_Cleanup
+	bsr.w	IPX_ZoneCleanup
 	bne.s	IPX_Continue_R8
 	bset	#5,(IPX_GoodFuture_Array).l
 
 ; IPX_loc_306:
 IPX_Continue_R8:
-	bsr.w	IPX_SaveGame
-	bsr.w	IPX_loc_4E4
-	bsr.w	IPX_loc_4F2
-	bsr.w	IPX_loc_500
+	bsr.w	IPX_SaveData
+	bsr.w	IPX_LoadAndRun_R81
+	bsr.w	IPX_LoadAndRun_R82
+	bsr.w	IPX_LoadAndRun_R83
 
 	moveq	#21,d0
-	bsr.w	IPX_EndOfZone_Cleanup
-	bne.s	IPX_loc_33E
+	bsr.w	IPX_ZoneCleanup
+	bne.s	IPX_EndOfGame
 	bset	#6,(IPX_GoodFuture_Array).l
 
-IPX_loc_33E:
-	move.b	(IPX_GoodFuture_Array).l,(IPX_unk_03CA).l
-	move.b	(IPX_TimeStones_Array).l,(IPX_unk_03CB).l
-	bsr.w	IPX_SaveGame
+;IPX_loc_33E:
+IPX_EndOfGame:
+	move.b	(IPX_GoodFuture_Array).l,(IPX_static_GoodFuture_Array).l
+	move.b	(IPX_TimeStones_Array).l,(IPX_static_TimeStones_Array).l
+	bsr.w	IPX_SaveData
 
-	cmpi.b	#$7F,(IPX_unk_03CA).l
-	beq.s	IPX_loc_384
-	cmpi.b	#$7F,(IPX_unk_03CB).l
-	beq.s	IPX_loc_384
+	cmpi.b	#$7F,(IPX_static_GoodFuture_Array).l
+	beq.s	IPX_GoodEnding
+	cmpi.b	#$7F,(IPX_static_TimeStones_Array).l
+	beq.s	IPX_GoodEnding
 
-IPX_loc_36A:
+;IPX_loc_36A:
+IPX_BadEnding:
 	move.b	#0,(IPX_unk_0F24).l
 	move.w	#bad_ending_file,d0
-	bsr.w	IPX_RunFile
-	tst.b	(IPX_unk_0BE3).l
-	bmi.s	IPX_loc_36A
+	bsr.w	IPX_LoadAndRunFile
+	tst.b	(IPX_static_unk_0BE3).l
+	bmi.s	IPX_BadEnding
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_loc_384:
+;IPX_loc_384:
+IPX_GoodEnding:
 	move.b	#$7F,(IPX_unk_0F24).l
 	move.w	#good_ending_file,d0
-	bsr.w	IPX_RunFile
-	tst.b	(IPX_unk_0BE3).l
-	bmi.s	IPX_loc_384
+	bsr.w	IPX_LoadAndRunFile
+	tst.b	(IPX_static_unk_0BE3).l
+	bmi.s	IPX_GoodEnding
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_EndOfZone_Cleanup:
+; Because of space limitations, functions of the Sonic CD Warped hack are scattered
+; everywhere where they fit... As such, we desperately need some free bytes.
+; This function alone free a lot of bytes as its code was originally copy/pasted 7 times.
+IPX_ZoneCleanup:
 	bsr.w	IPX_loc_5F8
 	move.b	#0,(IPX_unk_158E).l
 	move.b	#0,(IPX_unk_156D).l
-	cmpi.b	#3,(IPX_Machine_Flag).l
-.ret:	rts
+	cmpi.b	#3,(IPX_EggMachine_ZoneFlags).l ; Eggman machine destroyed in act 1 and act 2?
+	rts
 ; -----------------------------------------------------------------------------
 
 IPX_RandomTimezone_Future:
-	move.b	#future,(IPX_TimeZone).l
+	move.b	#future,(IPX_CurrentTimeZone).l
 	btst	#0,d1
 	beq.s	IPX_RandomTimezone_GoodFuture
 
 IPX_RandomTimezone_BadFuture:
 	bsr.s	IPX_TestAllTimeStones
 	bset	#7,(IPX_TimeStones_Array).l
-	move.b	#bad_future,(IPX_GoodFuture_Flag).l
+	move.b	#bad_future,(IPX_GoodFuture_ActFlag).l
 	rts
 ; -----------------------------------------------------------------------------
 
 IPX_RandomTimezone_GoodFuture:
 	bsr.s	IPX_TestAllTimeStones
-	move.b	#good_future,(IPX_GoodFuture_Flag).l
+	move.b	#good_future,(IPX_GoodFuture_ActFlag).l
 	rts
 ; -----------------------------------------------------------------------------
 
 IPX_TestAllTimeStones:
 	cmpi.b	#$7F,(IPX_TimeStones_Array).l
 	bne.s	.ret
-	move.b	#1,(IPX_Machine_Flag_Act).l
+	move.b	#1,(IPX_EggMachine_ActFlag).l
 .ret:	rts
 ; -----------------------------------------------------------------------------
 
 IPX_TestMachineFlag_EndLevel:
 	bclr	#7,(IPX_TimeStones_Array).l
 
-	tst.b	(IPX_RunFile_SrcTime).l
+	tst.b	(IPX_PreviousTimeZone).l
 	bne.s	IPX_TestAllTimeStones.ret
 
-	move.b	(IPX_GoodFuture_ZoneArray).l,d0
-	btst	#0,(IPX_Act).l
+	move.b	(IPX_GoodFuture_ZoneFlags).l,d0
+	btst	#0,(IPX_CurrentAct).l
 	bne.w	IPX_TestMachineFlag
 	lsr.b	#1,d0
 	bra.w	IPX_TestMachineFlag
 ; -----------------------------------------------------------------------------
 
 IPX_RandomTimezone_Act3:
-	cmpi.b	#3,(IPX_Machine_Flag).l
+	cmpi.b	#3,(IPX_EggMachine_ZoneFlags).l
 	bne.s	.skip
-	move.b	#1,(IPX_Machine_Flag_Act).l
+	move.b	#1,(IPX_EggMachine_ActFlag).l
 
-.skip:	move.b	#future,(IPX_TimeZone).l
+.skip:	move.b	#future,(IPX_CurrentTimeZone).l
 	lsr.w	#4,d1
 	andi.w	#1,d1
 	move.b	(a0,d1.w),d0
@@ -325,146 +327,146 @@ IPX_RandomTimezone_Act3:
 IPX_RAM_03CA:	dc.b	0
 IPX_RAM_03CB:	dc.b	0
 ; -----------------------------------------------------------------------------
-
-IPX_loc_3CC:
+;IPX_loc_3CC:
+IPX_LoadAndRun_R11:
 	lea	IPX_byte_608(pc),a0
-	move.w	#palmtree_panic_zone_act_1,(IPX_ZoneAndAct).l
+	move.w	#palmtree_panic_zone_act_1,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunActs_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_3DC:
+;IPX_loc_3DC:
+IPX_LoadAndRun_R12:
 	lea	IPX_byte_608+4(pc),a0
-	move.w	#palmtree_panic_zone_act_2,(IPX_ZoneAndAct).l
+	move.w	#palmtree_panic_zone_act_2,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunActs_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_3EC:
+;IPX_loc_3EC:
+IPX_LoadAndRun_R13:
 	lea	IPX_byte_608+8(pc),a0
-	move.w	#palmtree_panic_zone_act_3,(IPX_ZoneAndAct).l
+	move.w	#palmtree_panic_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunAct_3
 ; -----------------------------------------------------------------------------
-
-IPX_loc_3FC:
+;IPX_loc_3FC:
+IPX_LoadAndRun_R31:
 	lea	IPX_byte_612(pc),a0
-	move.w	#collision_chaos_zone_act_1,(IPX_ZoneAndAct).l
+	move.w	#collision_chaos_zone_act_1,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunActs_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_40C:
+;IPX_loc_40C:
+IPX_LoadAndRun_R32:
 	lea	IPX_byte_612+4(pc),a0
-	move.w	#collision_chaos_zone_act_2,(IPX_ZoneAndAct).l
+	move.w	#collision_chaos_zone_act_2,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunActs_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_41C:
+;IPX_loc_41C:
+IPX_LoadAndRun_R33:
 	lea	IPX_byte_612+8(pc),a0
-	move.w	#collision_chaos_zone_act_3,(IPX_ZoneAndAct).l
+	move.w	#collision_chaos_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunAct_3
 ; -----------------------------------------------------------------------------
-
-IPX_loc_42C:
+;IPX_loc_42C:
+IPX_LoadAndRun_R41:
 	lea	IPX_byte_61C(pc),a0
-	move.w	#tidal_tempest_zone_act_1,(IPX_ZoneAndAct).l
+	move.w	#tidal_tempest_zone_act_1,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunActs_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_43C:
+;IPX_loc_43C:
+IPX_LoadAndRun_R42:
 	lea	IPX_byte_61C+4(pc),a0
-	move.w	#tidal_tempest_zone_act_2,(IPX_ZoneAndAct).l
+	move.w	#tidal_tempest_zone_act_2,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunActs_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_44C:
+;IPX_loc_44C:
+IPX_LoadAndRun_R43:
 	lea	IPX_byte_61C+8(pc),a0
-	move.w	#tidal_tempest_zone_act_3,(IPX_ZoneAndAct).l
+	move.w	#tidal_tempest_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunAct_3
 ; -----------------------------------------------------------------------------
-
-IPX_loc_45C:
+;IPX_loc_45C:
+IPX_LoadAndRun_R51:
 	lea	IPX_byte_626(pc),a0
-	move.w	#quartz_quadrant_zone_act_1,(IPX_ZoneAndAct).l
+	move.w	#quartz_quadrant_zone_act_1,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunActs_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_46C:
+;IPX_loc_46C:
+IPX_LoadAndRun_R52:
 	lea	IPX_byte_626+4(pc),a0
-	move.w	#quartz_quadrant_zone_act_2,(IPX_ZoneAndAct).l
+	move.w	#quartz_quadrant_zone_act_2,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunActs_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_47C:
+;IPX_loc_47C:
+IPX_LoadAndRun_R53:
 	lea	IPX_byte_626+8(pc),a0
-	move.w	#quartz_quadrant_zone_act_3,(IPX_ZoneAndAct).l
+	move.w	#quartz_quadrant_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunAct_3
 ; -----------------------------------------------------------------------------
-
-IPX_loc_48C:
+;IPX_loc_48C:
+IPX_LoadAndRun_R61:
 	lea	IPX_byte_630(pc),a0
-	move.w	#wacky_workbench_zone_act_1,(IPX_ZoneAndAct).l
+	move.w	#wacky_workbench_zone_act_1,(IPX_CurrentZoneAndAct).l
 	bra.s	IPX_RunActs_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_49A:
+;IPX_loc_49A:
+IPX_LoadAndRun_R62:
 	lea	IPX_byte_630+4(pc),a0
-	move.w	#wacky_workbench_zone_act_2,(IPX_ZoneAndAct).l
+	move.w	#wacky_workbench_zone_act_2,(IPX_CurrentZoneAndAct).l
 	bra.s	IPX_RunActs_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_4A8:
+;IPX_loc_4A8:
+IPX_LoadAndRun_R63:
 	lea	IPX_byte_630+8(pc),a0
-	move.w	#wacky_workbench_zone_act_3,(IPX_ZoneAndAct).l
+	move.w	#wacky_workbench_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunAct_3
 ; -----------------------------------------------------------------------------
-
-IPX_loc_4B8:
+;IPX_loc_4B8:
+IPX_LoadAndRun_R71:
 	lea	IPX_byte_63A(pc),a0
-	move.w	#stardust_speedway_zone_act_1,(IPX_ZoneAndAct).l
+	move.w	#stardust_speedway_zone_act_1,(IPX_CurrentZoneAndAct).l
 	bra.s	IPX_RunActs_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_4C6:
+;IPX_loc_4C6:
+IPX_LoadAndRun_R72:
 	lea	IPX_byte_63A+4(pc),a0
-	move.w	#stardust_speedway_zone_act_2,(IPX_ZoneAndAct).l
+	move.w	#stardust_speedway_zone_act_2,(IPX_CurrentZoneAndAct).l
 	bra.s	IPX_RunActs_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_4D4:
+;IPX_loc_4D4:
+IPX_LoadAndRun_R73:
 	lea	IPX_byte_63A+8(pc),a0
-	move.w	#stardust_speedway_zone_act_3,(IPX_ZoneAndAct).l
+	move.w	#stardust_speedway_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunAct_3
 ; -----------------------------------------------------------------------------
-
-IPX_loc_4E4:
+;IPX_loc_4E4:
+IPX_LoadAndRun_R81:
 	lea	IPX_byte_644(pc),a0
-	move.w	#metallic_madness_zone_act_1,(IPX_ZoneAndAct).l
+	move.w	#metallic_madness_zone_act_1,(IPX_CurrentZoneAndAct).l
 	bra.s	IPX_RunActs_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_4F2:
+;IPX_loc_4F2:
+IPX_LoadAndRun_R82:
 	lea	IPX_byte_644+4(pc),a0
-	move.w	#metallic_madness_zone_act_2,(IPX_ZoneAndAct).l
+	move.w	#metallic_madness_zone_act_2,(IPX_CurrentZoneAndAct).l
 	bra.s	IPX_RunActs_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_500:
+;IPX_loc_500:
+IPX_LoadAndRun_R83:
 	lea	IPX_byte_644+8(pc),a0
-	move.w	#metallic_madness_zone_act_3,(IPX_ZoneAndAct).l
+	move.w	#metallic_madness_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunAct_3
 ; -----------------------------------------------------------------------------
 ; IPX_loc_510:
 IPX_RunActs_1_2:
 	bsr.w	IPX_RandomTimezone
-	move.b	(IPX_TimeZone).l,(IPX_RunFile_SrcTime).l
-	andi.b	#3,(IPX_RunFile_SrcTime).l
-	bsr.w	IPX_RunFile
+	move.b	(IPX_CurrentTimeZone).l,(IPX_PreviousTimeZone).l
+	andi.b	#3,(IPX_PreviousTimeZone).l
+	bsr.w	IPX_LoadAndRunFile
 
 	tst.b	(IPX_unk_1508).l
 	beq.s	IPX_loc_55E
-	btst	#7,(IPX_TimeZone).l
+	btst	#7,(IPX_CurrentTimeZone).l
 	beq.s	IPX_loc_55E
 
 	; Warp (cutscene disabled)
-	bset	#2,(IPX_RunFile_Flag).l
+	bset	#2,(IPX_PreviousGameMode).l
 	bra.s	IPX_RunActs_1_2
 ; -----------------------------------------------------------------------------
 
@@ -479,29 +481,29 @@ IPX_loc_56C:
 	tst.b	(IPX_unk_156E).l
 	bne.s	IPX_loc_576
 	; End of act
-	bset	#1,(IPX_RunFile_Flag).l
+	bset	#1,(IPX_PreviousGameMode).l
 	bra.w	IPX_TestMachineFlag_EndLevel
 ; -----------------------------------------------------------------------------
 
 IPX_loc_576: 
 	; Special stage
-	bset	#1,(IPX_RunFile_Flag).l
+	bset	#1,(IPX_PreviousGameMode).l
 	bsr.w	IPX_TestMachineFlag_EndLevel
 
 	cmpi.b	#$7F,(IPX_TimeStones_Array).l
 	beq.w	IPX_SecretSpecialStage
 
-	move.b	(IPX_unk_0F21).l,(IO_unk_A12013).l
-	move.b	(IPX_TimeStones_Array).l,(IO_unk_A1201A).l
-	bclr	#0,(IO_unk_A1201B).l
+	move.b	(IPX_unk_0F21).l,(IO_SpecialStageToLoad).l
+	move.b	(IPX_TimeStones_Array).l,(IO_TimeStones_Array).l
+	bclr	#0,(IO_SpecialStage_Flags).l
 
 	moveq	#special_stage_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
 	move.b	#1,(IPX_unk_0F22).l
 	cmpi.b	#$7F,(IPX_TimeStones_Array).l
 	bne.s	IPX_loc_5B2
-	move.b	#good_future,(IPX_GoodFuture_Flag).l
+	move.b	#good_future,(IPX_GoodFuture_ActFlag).l
 
 IPX_loc_5B2:
 	rts
@@ -509,7 +511,7 @@ IPX_loc_5B2:
 ; IPX_loc_5B4:
 IPX_RunAct_3:
 	bsr.w	IPX_RandomTimezone
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
 	tst.b	(IPX_unk_1508).l
 	bne.s	IPX_loc_5D8
@@ -523,11 +525,11 @@ IPX_RunAct_GameOver:
 IPX_loc_5D8:
 	; End of act
 	bclr	#7,(IPX_TimeStones_Array).l
-	bset	#1,(IPX_RunFile_Flag).l
-	addq.b	#1,(IPX_unk_0F02).l
-	cmpi.b	#7,(IPX_unk_0F02).l
+	bset	#1,(IPX_PreviousGameMode).l
+	addq.b	#1,(IPX_CurrentZoneInSave).l
+	cmpi.b	#7,(IPX_CurrentZoneInSave).l
 	bcs.s	IPX_loc_5EE
-	subq.b	#1,(IPX_unk_0F02).l
+	subq.b	#1,(IPX_CurrentZoneInSave).l
 
 IPX_loc_5EE:
 	move.b	#0,(IPX_unk_158E).l
@@ -535,12 +537,12 @@ IPX_loc_5EE:
 ; -----------------------------------------------------------------------------
 
 IPX_loc_39E:
-	move.b	#0,(IPX_Act).l
-	move.w	(IPX_ZoneAndAct).l,(IPX_unk_0F02).l
+	move.b	#0,(IPX_CurrentAct).l
+	move.w	(IPX_CurrentZoneAndAct).l,(IPX_CurrentZoneInSave).l
 
 	move.b	#0,(IPX_unk_158E).l
 	move.b	#0,(IPX_unk_156D).l
-	move.b	#bad_future,(IPX_GoodFuture_Flag).l
+	move.b	#bad_future,(IPX_GoodFuture_ActFlag).l
 	rts
 ; -----------------------------------------------------------------------------
 
@@ -585,11 +587,11 @@ IPX_byte_644:
 
 IPX_RandomTimezone:
 	moveq	#0,d0
-	move.b	(IPX_RunFile_Flag).l,d0
-	move.b	#0,(IPX_RunFile_Flag).l
+	move.b	(IPX_PreviousGameMode).l,d0
+	move.b	#0,(IPX_PreviousGameMode).l
 	btst	#2,d0
 	bne.w	IPX_RandomTimezone_Warp
-	move.b	#0,(IPX_Machine_Flag_Act).l
+	move.b	#0,(IPX_EggMachine_ActFlag).l
 	btst	#1,d0
 	bne.s	.level
 
@@ -600,11 +602,11 @@ IPX_RandomTimezone:
 
 .level:
 	move.w	(IPX_FramesCounter_Level).l,d1
-	btst	#1,(IPX_Act).l
+	btst	#1,(IPX_CurrentAct).l
 	bne.w	IPX_RandomTimezone_Act3
 
 .acts_1_2:
-	lsl.w	(IPX_Machine_Flag).l
+	lsl.w	(IPX_EggMachine_ZoneFlags).l
 	lsr.w	#4,d1
 	andi.w	#3,d1
 	move.b	(a0,d1.w),d0
@@ -616,12 +618,12 @@ IPX_RandomTimezone:
 ; -----------------------------------------------------------------------------
 
 IPX_RandomTimezone_Present:
-	move.b	#present,(IPX_TimeZone).l
+	move.b	#present,(IPX_CurrentTimeZone).l
 	rts
 ; -----------------------------------------------------------------------------
 
 IPX_RandomTimezone_Past:
-	move.b	#past,(IPX_TimeZone).l
+	move.b	#past,(IPX_CurrentTimeZone).l
 	rts
 ; -----------------------------------------------------------------------------
 ; CD-ROM section interleaved with the code.
@@ -640,18 +642,18 @@ IPX_RandomTimezone_Past:
 ; IPX_loc_64E:
 IPX_LevelSelect:
 	moveq	#level_select_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
 	mulu.w	#6,d0
-	move.w	IPX_byte_68A+2(pc,d0.w),(IPX_ZoneAndAct).l
-	move.b	IPX_byte_68A+4(pc,d0.w),(IPX_TimeZone).l
-	move.b	IPX_byte_68A+5(pc,d0.w),(IPX_GoodFuture_Flag).l
+	move.w	IPX_byte_68A+2(pc,d0.w),(IPX_CurrentZoneAndAct).l
+	move.b	IPX_byte_68A+4(pc,d0.w),(IPX_CurrentTimeZone).l
+	move.b	IPX_byte_68A+5(pc,d0.w),(IPX_GoodFuture_ActFlag).l
 	move.w	IPX_byte_68A(pc,d0.w),d0
 	move.b	#0,(IPX_unk_156D).l
 
 	cmpi.w	#special_stage_file,d0
 	beq.w	IPX_SS1_Start
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 	rts
 ;-----------------------------------------------------------------------------
 
@@ -770,12 +772,12 @@ IPX_off_Demo:	offsetTable
 ; IPX_loc_88A:
 IPX_R1_Demo:
 	move.b	#0,(IPX_unk_151C).l
-	move.w	#palmtree_panic_zone_act_1,(IPX_ZoneAndAct).l
-	move.b	#present,(IPX_TimeZone).l
-	move.b	#bad_future,(IPX_GoodFuture_Flag).l
+	move.w	#palmtree_panic_zone_act_1,(IPX_CurrentZoneAndAct).l
+	move.b	#present,(IPX_CurrentTimeZone).l
+	move.b	#bad_future,(IPX_GoodFuture_ActFlag).l
 
 	move.w	#R1_demo_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
 	move.w	#0,(IPX_unk_1580).l
 	rts
@@ -783,12 +785,12 @@ IPX_R1_Demo:
 ; IPX_loc_8BC:
 IPX_R4_Demo:
 	move.b	#0,(IPX_unk_151C).l
-	move.w	#tidal_tempest_zone_act_3,(IPX_ZoneAndAct).l
-	move.b	#future,(IPX_TimeZone).l
-	move.b	#good_future,(IPX_GoodFuture_Flag).l
+	move.w	#tidal_tempest_zone_act_3,(IPX_CurrentZoneAndAct).l
+	move.b	#future,(IPX_CurrentTimeZone).l
+	move.b	#good_future,(IPX_GoodFuture_ActFlag).l
 
 	move.w	#R4_demo_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
 	move.w	#0,(IPX_unk_1580).l
 	rts
@@ -796,12 +798,12 @@ IPX_R4_Demo:
 ; IPX_loc_8EE:
 IPX_R8_Demo:
 	move.b	#0,(IPX_unk_151C).l
-	move.w	#metallic_madness_zone_act_2,(IPX_ZoneAndAct).l
-	move.b	#present,(IPX_TimeZone).l
-	move.b	#bad_future,(IPX_GoodFuture_Flag).l
+	move.w	#metallic_madness_zone_act_2,(IPX_CurrentZoneAndAct).l
+	move.b	#present,(IPX_CurrentTimeZone).l
+	move.b	#bad_future,(IPX_GoodFuture_ActFlag).l
 
 	move.w	#R8_demo_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
 	move.w	#0,(IPX_unk_1580).l
 	rts
@@ -821,15 +823,15 @@ IPX_SS6_Demo:
 ; IPX_loc_938:
 IPX_IntroVideo:
 	move.w	#intro_video_file,d0
-	bsr.w	IPX_RunFile
-	tst.b	(IPX_unk_0BE3).l
+	bsr.w	IPX_LoadAndRunFile
+	tst.b	(IPX_static_unk_0BE3).l
 	bmi.s	IPX_IntroVideo
 	rts
 ; -----------------------------------------------------------------------------
 ; IPX_loc_94A:
 IPX_SoundTest:
 	moveq	#sound_test_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
 	add.w	d0,d0
 	move.w	IPX_off_95A(pc,d0.w),d0
@@ -851,19 +853,19 @@ IPX_loc_968:
 ; -----------------------------------------------------------------------------
 
 IPX_loc_96A:
-	move.b	#7,(IO_unk_A12013).l
-	move.b	#0,(IO_unk_A1201A).l
-	bset	#0,(IO_unk_A1201B).l
-	bset	#2,(IO_unk_A1201B).l
+	move.b	#7,(IO_SpecialStageToLoad).l
+	move.b	#0,(IO_TimeStones_Array).l
+	bset	#0,(IO_SpecialStage_Flags).l
+	bset	#2,(IO_SpecialStage_Flags).l
 
 	moveq	#special_stage_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
 	tst.b	(IPX_unk_0F25).l
 	bne.s	IPX_loc_9A0
 
 	move.w	#secret2_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
 IPX_loc_9A0:
 	rts
@@ -871,32 +873,32 @@ IPX_loc_9A0:
 
 IPX_loc_9A2:
 	move.w	#secret1_file,d0
-	bra.w	IPX_RunFile
+	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
 
 IPX_loc_9AA:
 	move.w	#secret3_file,d0
-	bra.w	IPX_RunFile
+	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
 
 IPX_loc_9B2:
 	move.w	#secret4_file,d0
-	bra.w	IPX_RunFile
+	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
 
 IPX_loc_9BA:
 	move.w	#secret5_file,d0
-	bra.w	IPX_RunFile
+	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
 
 IPX_loc_9C2:
 	move.w	#secret6_file,d0
-	bra.w	IPX_RunFile
+	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
 ; IPX_loc_9CA:
 IPX_VisualMode:
 	move.w	#visual_mode_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
 	add.w	d0,d0
 	move.w	IPX_off_9DC(pc,d0.w),d0
@@ -913,9 +915,9 @@ IPX_off_9DC:	offsetTable
 
 IPX_loc_9E6:
 	move.w	#intro_video_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_unk_0BE3).l
+	tst.b	(IPX_static_unk_0BE3).l
 	bmi.s	IPX_loc_9E6
 	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
@@ -926,9 +928,9 @@ IPX_loc_9F8:
 
 IPX_loc_9FA:
 	move.w	#pencil_test_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_unk_0BE3).l
+	tst.b	(IPX_static_unk_0BE3).l
 	bmi.s	IPX_loc_9FA
 	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
@@ -936,34 +938,34 @@ IPX_loc_9FA:
 IPX_loc_A0C:
 	move.b	#$7F,(IPX_unk_0F24).l
 	move.w	#good_ending_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_unk_0BE3).l
+	tst.b	(IPX_static_unk_0BE3).l
 	bmi.s	IPX_loc_A0C
 
 	move.w	#player_name_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
 
 IPX_loc_A2E:
 	move.b	#0,(IPX_unk_0F24).l
 	move.w	#bad_ending_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_unk_0BE3).l
+	tst.b	(IPX_static_unk_0BE3).l
 	bmi.s	IPX_loc_A2E
 	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
 ; IPX_loc_A48:
 IPX_DAGarden:
 	move.w	#d_a_garden_file,d0
-	bra.w	IPX_RunFile
+	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
 ; IPX_loc_A50:
 IPX_TimeAttack:
 	moveq	#time_attack_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
 	move.w	d0,(IPX_unk_0F14).l
 	beq.w	IPX_loc_AB2
@@ -973,14 +975,14 @@ IPX_TimeAttack:
 
 	mulu.w	#6,d0
 	lea	IPX_byte_68A(pc),a6
-	move.w	2(a6,d0.w),(IPX_ZoneAndAct).l
-	move.b	4(a6,d0.w),(IPX_TimeZone).l
-	move.b	5(a6,d0.w),(IPX_GoodFuture_Flag).l
+	move.w	2(a6,d0.w),(IPX_CurrentZoneAndAct).l
+	move.b	4(a6,d0.w),(IPX_CurrentTimeZone).l
+	move.b	5(a6,d0.w),(IPX_GoodFuture_ActFlag).l
 	move.w	(a6,d0.w),d0
 
 	move.b	#1,(IPX_unk_0F01).l
 	move.b	#0,(IPX_unk_156D).l
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 
 	move.b	#0,(IPX_unk_158E).l
 	move.l	(IPX_unk_1514).l,(IPX_unk_0F10).l
@@ -1002,12 +1004,12 @@ IPX_loc_AD2:
 	neg.b	d0
 	ext.w	d0
 	subq.w	#1,d0
-	move.b	d0,(IO_unk_A12013).l
-	move.b	#0,(IO_unk_A1201A).l
-	bset	#1,(IO_unk_A1201B).l
+	move.b	d0,(IO_SpecialStageToLoad).l
+	move.b	#0,(IO_TimeStones_Array).l
+	bset	#1,(IO_SpecialStage_Flags).l
 
 	moveq	#special_stage_file,d0
-	bsr.w	IPX_RunFile
+	bsr.w	IPX_LoadAndRunFile
 	bra.w	IPX_TimeAttack
 ; -----------------------------------------------------------------------------
 
@@ -1021,13 +1023,13 @@ IPX_loc_D1C:
 IPX_TestMachineFlag:
 	btst	#0,d0
 	beq.s	.skip
-	bset	#0,(IPX_Machine_Flag).l
-	move.b	#1,(IPX_Machine_Flag_Act).l
+	bset	#0,(IPX_EggMachine_ZoneFlags).l
+	move.b	#1,(IPX_EggMachine_ActFlag).l
 .skip:	rts
 ; -----------------------------------------------------------------------------
 
 IPX_TestMachineFlag_Warp:
-	move.b	(IPX_GoodFuture_Flag).l,d0
+	move.b	(IPX_GoodFuture_ActFlag).l,d0
 	bra.w	IPX_TestMachineFlag
 ; -----------------------------------------------------------------------------
 ; RAM variables inside executed code
@@ -1044,7 +1046,7 @@ IPX_RAM_0BE2:	dc.b	0
 IPX_RAM_0BE3:	dc.b	0
 ; -----------------------------------------------------------------------------
 
-IPX_RunFile:
+IPX_LoadAndRunFile:
 	move.l	a0,-(sp)
 	move.w	d0,(IO_unk_A12010).l
 
@@ -1108,7 +1110,7 @@ IPX_loc_B86:
 
 	jsr	(a0)
 
-	move.b	d0,(IPX_unk_0BE3).l
+	move.b	d0,(IPX_static_unk_0BE3).l
 	bsr.w	IPX_loc_D30
 
 	move.b	#$E0,(IO_unk_A01C0A).l
@@ -1139,10 +1141,10 @@ IPX_int_C06:
 ; -----------------------------------------------------------------------------
 
 ; IPX_loc_C08:
-IPX_LoadGame:
+IPX_LoadSavedData:
 	bsr.w	IPX_loc_C58
 
-	move.w	(BRAM_unk_2002A4).l,(IPX_unk_0F02).l
+	move.w	(BRAM_unk_2002A4).l,(IPX_CurrentZoneInSave).l
 	move.b	(BRAM_GoodFuture_Array).l,(IPX_GoodFuture_Array).l
 	move.b	(BRAM_unk_2002A8).l,(IPX_unk_0F1D).l
 	move.b	(BRAM_unk_2002A5).l,(IPX_unk_0F18).l
@@ -1170,11 +1172,11 @@ IPX_RandomTimezone_Warp_FromFuture:
 	bclr	#1,d1
 	move.b	(a0,d1.w),d0
 	bchg	#0,d1
-	move.b	d1,(IPX_TimeZone).l
+	move.b	d1,(IPX_CurrentTimeZone).l
 
 	bclr	#7,(IPX_TimeStones_Array).l
-	move.b	#bad_future,(IPX_GoodFuture_Flag).l
-	btst	#0,(IPX_Machine_Flag).l
+	move.b	#bad_future,(IPX_GoodFuture_ActFlag).l
+	btst	#0,(IPX_EggMachine_ZoneFlags).l
 	bne.w	IPX_RandomTimezone_GoodFuture
 	rts
 ; -----------------------------------------------------------------------------
@@ -1199,12 +1201,12 @@ IPX_RAM_0DA6:	dc.w	0
 ; -----------------------------------------------------------------------------
 
 ; IPX_loc_C76:
-IPX_SaveGame:
-	move.b	#bad_future,(IPX_GoodFuture_Flag).l
-	move.b	#0,(IPX_Machine_Flag).l
+IPX_SaveData:
+	move.b	#bad_future,(IPX_GoodFuture_ActFlag).l
+	move.b	#0,(IPX_EggMachine_ZoneFlags).l
 	bsr.s	IPX_loc_C58 
 
-	move.w	(IPX_unk_0F02).l,(BRAM_unk_2002A4).l
+	move.w	(IPX_CurrentZoneInSave).l,(BRAM_unk_2002A4).l
 	move.b	(IPX_GoodFuture_Array).l,(BRAM_GoodFuture_Array).l
 	move.b	(IPX_unk_0F1D).l,(BRAM_unk_2002A8).l
 	move.b	(IPX_unk_0F18).l,(BRAM_unk_2002A5).l
@@ -1281,12 +1283,12 @@ IPX_RandomTimezone_Warp:
 	lsr.w	#4,d1
 	andi.w	#3,d1
 
-	cmpi.b	#1,(IPX_RunFile_SrcTime).l
+	cmpi.b	#1,(IPX_PreviousTimeZone).l
 	blt.s	IPX_RandomTimezone_Warp_FromPast
 	bgt.w	IPX_RandomTimezone_Warp_FromFuture
 
 ;IPX_RandomTimezone_Warp_FromPresent:
-	btst	#1,(IPX_TimeZone).l
+	btst	#1,(IPX_CurrentTimeZone).l
 	beq.s	IPX_RandomTimezone_Warp_FromPresent_ToPast
 
 	bset	#1,d1
