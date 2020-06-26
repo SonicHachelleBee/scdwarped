@@ -249,7 +249,7 @@ IPX_unk_0F24 =			$00FF0F24
 IPX_unk_0F25 =			$00FF0F25
 IPX_CurrentZoneAndAct =		$00FF1506 ; Current zone and act (2 bytes)
 IPX_CurrentAct =		$00FF1507 ; Current act
-IPX_unk_1508 =			$00FF1508
+IPX_LifeCount =			$00FF1508 ; Extra lives counter
 IPX_unk_1512 =			$00FF1512
 IPX_unk_1514 =			$00FF1514
 IPX_unk_1518 =			$00FF1518
@@ -257,7 +257,7 @@ IPX_unk_151C =			$00FF151C
 IPX_CurrentTimeZone =		$00FF152E ; Current time zone
 IPX_GoodFuture_ActFlag =	$00FF156A ; For the current act only: 0 = bad future, 1 = good future
 IPX_unk_156D =			$00FF156D
-IPX_unk_156E =			$00FF156E
+IPX_SpecialStageFlag =		$00FF156E ; If 1, the special stage has to be loaded next.
 IPX_unk_1577 =			$00FF1577
 IPX_unk_1580 =			$00FF1580
 IPX_unk_158E =			$00FF158E

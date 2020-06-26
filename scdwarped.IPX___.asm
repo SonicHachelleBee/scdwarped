@@ -41,7 +41,7 @@ IPX_MainLoop:
 	moveq	#0,d0
 	move.l	d0,(IPX_unk_1518).l
 	move.b	d0,(IPX_unk_0F01).l
-	move.b	d0,(IPX_unk_156E).l
+	move.b	d0,(IPX_SpecialStageFlag).l
 	move.b	d0,(IPX_unk_158E).l
 	move.w	d0,(IPX_unk_1512).l
 	move.l	d0,(IPX_unk_1514).l
@@ -109,7 +109,7 @@ IPX_Continue:
 
 	bsr.w	IPX_LoadSavedData
 	move.w	(IPX_CurrentZoneInSave).l,(IPX_CurrentZoneAndAct).l
-	move.b	#3,(IPX_unk_1508).l
+	move.b	#3,(IPX_LifeCount).l
 	move.b	#0,(IPX_unk_151C).l
 
 	cmpi.b	#palmtree_panic_zone,(IPX_CurrentZoneAndAct).l
@@ -261,234 +261,295 @@ IPX_ZoneCleanup:
 	bsr.w	IPX_loc_5F8
 	move.b	#0,(IPX_unk_158E).l
 	move.b	#0,(IPX_unk_156D).l
+
+	; In Sonic CD Warped, a good ending is not granted when all the good future flags are set.
+	; Instead, the good ending is based on the Eggman machine flags, when all Eggman machines
+	; are actually destroyed. The good future flag only purpose is now to display the bad and
+	; good future time zones properly.
 	cmpi.b	#3,(IPX_EggMachine_ZoneFlags).l ; Eggman machine destroyed in act 1 and act 2?
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_RandomTimezone_Future:
+; Actions to perform when we are going to load a level in good or bad future.
+; This can be at start of a level, or when warping to future.
+IPX_RandomTimeZone_Future:
 	move.b	#future,(IPX_CurrentTimeZone).l
-	btst	#0,d1
-	beq.s	IPX_RandomTimezone_GoodFuture
 
-IPX_RandomTimezone_BadFuture:
-	bsr.s	IPX_TestAllTimeStones
+	; d1 carries the flag to test for good or bad future.
+	; It can be chosen randomly.
+	btst	#0,d1
+	beq.s	IPX_RandomTimeZone_GoodFuture
+
+IPX_RandomTimeZone_BadFuture:
+	; Set the Eggman machine destroyed flag if all the time stones are already collected.
+	; As such, this displays a good future at the score tally even if we are in a bad future.
+	bsr.s	IPX_CheckTimeStonesCollected
+
+	; When all time stones are collected, the bad future badniks acts as if we are in
+	; a good future (flowers spawning everywhere). Also, the music playing is the good future one.
+	; To avoid that, a workaround is to set the last unused bit of the byte array, so that
+	; its value is not $7F anymore (but $FF). This way, tests are invalidated in the level MMD file.
+	; Then, the badniks displayed and the music are the bad future ones.
 	bset	#7,(IPX_TimeStones_Array).l
+
+	; Reset the good future flag in case we were in a good future time zone before.
 	move.b	#bad_future,(IPX_GoodFuture_ActFlag).l
 	rts
 ; -----------------------------------------------------------------------------
 
-IPX_RandomTimezone_GoodFuture:
-	bsr.s	IPX_TestAllTimeStones
+IPX_RandomTimeZone_GoodFuture:
+	; Set the Eggman machine destroyed flag if all the time stones are already collected.
+	; As such, this displays a good future at the score tally. However, if the time stones
+	; are not all collected, and if the Eggman machine is not destroyed, the score tally
+	; will not display a good future even if we are in the good future time zone.
+	bsr.s	IPX_CheckTimeStonesCollected
+
+	; Set the good future flag so that badniks are displayed as flowers. The music playing
+	; is also the good future one.
 	move.b	#good_future,(IPX_GoodFuture_ActFlag).l
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_TestAllTimeStones:
+; Set the Eggman machine destroyed flag if all the time stones are already collected.
+; This allows to display a good future at the score tally, no matter the time zone you are in.
+IPX_CheckTimeStonesCollected:
 	cmpi.b	#$7F,(IPX_TimeStones_Array).l
 	bne.s	.ret
 	move.b	#1,(IPX_EggMachine_ActFlag).l
 .ret:	rts
 ; -----------------------------------------------------------------------------
-
-IPX_TestMachineFlag_EndLevel:
+; When act 1 or act 2 ends, there are some things to check before we can continue.
+IPX_CheckEndLevel_Acts_1_2:
+	; Remove the workaround on the time stones array by clearing the last unused bit of the byte
+	; array. This workaround is used in the bad future time zone to display bad future badniks and
+	; play the bad future music even if all the time stones are already collected.
 	bclr	#7,(IPX_TimeStones_Array).l
 
+	; In case we destroy the Eggman machine and finish the level in the past time zone without
+	; warping, the Eggman machine flag will not be set properly. We need to set the Eggman machine
+	; flag in this case so that a good ending can be achieved.
 	tst.b	(IPX_PreviousTimeZone).l
-	bne.s	IPX_TestAllTimeStones.ret
+	bne.s	IPX_CheckTimeStonesCollected.ret ; A lazy way to gain 2 bytes of data...
 
+	; Executed only when the level ended on the past time zone.
+	; We are going to set the Eggman machine flag following the good future flag (automatically
+	; set when destroying the Eggman machine object) and the current act we were in.
 	move.b	(IPX_GoodFuture_ZoneFlags).l,d0
-	btst	#0,(IPX_CurrentAct).l
-	bne.w	IPX_TestMachineFlag
-	lsr.b	#1,d0
-	bra.w	IPX_TestMachineFlag
-; -----------------------------------------------------------------------------
 
-IPX_RandomTimezone_Act3:
+	; bit = 0, from act 1 to act 2 (b00 -> b01)
+	; bit = 1, from act 2 to act 3 (b01 -> b10)
+	btst	#0,(IPX_CurrentAct).l
+	bne.w	IPX_TestMachineFlag ; Act 1
+	lsr.b	#1,d0 ; Select bit assigned for act 2
+	bra.w	IPX_TestMachineFlag ; Act 2
+; -----------------------------------------------------------------------------
+; Actions to perform when act 3 begins.
+IPX_RandomTimeZone_BeginLevel_Act_3:
+	; We test the Eggman machine flag for both acts 1 and 2, and set the flag for act 3 accordingly.
+	; As such, when the Eggman machine was destroyed in each act, this displays a good future
+	; at the score tally.
 	cmpi.b	#3,(IPX_EggMachine_ZoneFlags).l
 	bne.s	.skip
 	move.b	#1,(IPX_EggMachine_ActFlag).l
 
-.skip:	move.b	#future,(IPX_CurrentTimeZone).l
-	lsr.w	#4,d1
+	; Select a random time zone among good future or bad future.
+	; d1 contains the last frames counter value from the previous level.
+.skip:	lsr.w	#4,d1
 	andi.w	#1,d1
 	move.b	(a0,d1.w),d0
-	tst.b	d1
-	beq.s	IPX_RandomTimezone_GoodFuture
-	bra.w	IPX_RandomTimezone_BadFuture
+	bra.w	IPX_RandomTimeZone_Future
 ; -----------------------------------------------------------------------------
-; RAM variables inside executed code
-	if * > $16F56EA
-		fatal "IPX___.MMD RAM variables in $03CA-$03CB are erased! $\{*} > $16F56EA"
-	else
-		message "IPX___.MMD RAM variables in $03CA-$03CB: $\{*} <= $16F56EA"
+; RAM variables in between executed code. Looks like some static variables...
+; They shall stay at their exact address because they are referenced by other MMD files which
+; are not disassembled yet!
+	if * > $13FDCCA
+		fatal "IPX___.MMD RAM variables at $03CA-$03CB are erased! $\{*} > $13FDCCA"
 	endif
-	org	$16F56EA
+	org	$13FDCCA
 
-IPX_RAM_03CA:	dc.b	0
-IPX_RAM_03CB:	dc.b	0
+IPX_RAM_03CA:	dc.b	0 ; IPX_static_GoodFuture_Array
+IPX_RAM_03CB:	dc.b	0 ; IPX_static_TimeStones_Array
 ; -----------------------------------------------------------------------------
 ;IPX_loc_3CC:
 IPX_LoadAndRun_R11:
-	lea	IPX_byte_608(pc),a0
+	lea	IPX_FilesList_R1(pc),a0
 	move.w	#palmtree_panic_zone_act_1,(IPX_CurrentZoneAndAct).l
-	bra.w	IPX_RunActs_1_2
+	bra.w	IPX_RunAct_1_2
 ; -----------------------------------------------------------------------------
 ;IPX_loc_3DC:
 IPX_LoadAndRun_R12:
-	lea	IPX_byte_608+4(pc),a0
+	lea	IPX_FilesList_R1+4(pc),a0
 	move.w	#palmtree_panic_zone_act_2,(IPX_CurrentZoneAndAct).l
-	bra.w	IPX_RunActs_1_2
+	bra.w	IPX_RunAct_1_2
 ; -----------------------------------------------------------------------------
 ;IPX_loc_3EC:
 IPX_LoadAndRun_R13:
-	lea	IPX_byte_608+8(pc),a0
+	lea	IPX_FilesList_R1+8(pc),a0
 	move.w	#palmtree_panic_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunAct_3
 ; -----------------------------------------------------------------------------
 ;IPX_loc_3FC:
 IPX_LoadAndRun_R31:
-	lea	IPX_byte_612(pc),a0
+	lea	IPX_FilesList_R3(pc),a0
 	move.w	#collision_chaos_zone_act_1,(IPX_CurrentZoneAndAct).l
-	bra.w	IPX_RunActs_1_2
+	bra.w	IPX_RunAct_1_2
 ; -----------------------------------------------------------------------------
 ;IPX_loc_40C:
 IPX_LoadAndRun_R32:
-	lea	IPX_byte_612+4(pc),a0
+	lea	IPX_FilesList_R3+4(pc),a0
 	move.w	#collision_chaos_zone_act_2,(IPX_CurrentZoneAndAct).l
-	bra.w	IPX_RunActs_1_2
+	bra.w	IPX_RunAct_1_2
 ; -----------------------------------------------------------------------------
 ;IPX_loc_41C:
 IPX_LoadAndRun_R33:
-	lea	IPX_byte_612+8(pc),a0
+	lea	IPX_FilesList_R3+8(pc),a0
 	move.w	#collision_chaos_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunAct_3
 ; -----------------------------------------------------------------------------
 ;IPX_loc_42C:
 IPX_LoadAndRun_R41:
-	lea	IPX_byte_61C(pc),a0
+	lea	IPX_FilesList_R4(pc),a0
 	move.w	#tidal_tempest_zone_act_1,(IPX_CurrentZoneAndAct).l
-	bra.w	IPX_RunActs_1_2
+	bra.w	IPX_RunAct_1_2
 ; -----------------------------------------------------------------------------
 ;IPX_loc_43C:
 IPX_LoadAndRun_R42:
-	lea	IPX_byte_61C+4(pc),a0
+	lea	IPX_FilesList_R4+4(pc),a0
 	move.w	#tidal_tempest_zone_act_2,(IPX_CurrentZoneAndAct).l
-	bra.w	IPX_RunActs_1_2
+	bra.w	IPX_RunAct_1_2
 ; -----------------------------------------------------------------------------
 ;IPX_loc_44C:
 IPX_LoadAndRun_R43:
-	lea	IPX_byte_61C+8(pc),a0
+	lea	IPX_FilesList_R4+8(pc),a0
 	move.w	#tidal_tempest_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunAct_3
 ; -----------------------------------------------------------------------------
 ;IPX_loc_45C:
 IPX_LoadAndRun_R51:
-	lea	IPX_byte_626(pc),a0
+	lea	IPX_FilesList_R5(pc),a0
 	move.w	#quartz_quadrant_zone_act_1,(IPX_CurrentZoneAndAct).l
-	bra.w	IPX_RunActs_1_2
+	bra.w	IPX_RunAct_1_2
 ; -----------------------------------------------------------------------------
 ;IPX_loc_46C:
 IPX_LoadAndRun_R52:
-	lea	IPX_byte_626+4(pc),a0
+	lea	IPX_FilesList_R5+4(pc),a0
 	move.w	#quartz_quadrant_zone_act_2,(IPX_CurrentZoneAndAct).l
-	bra.w	IPX_RunActs_1_2
+	bra.w	IPX_RunAct_1_2
 ; -----------------------------------------------------------------------------
 ;IPX_loc_47C:
 IPX_LoadAndRun_R53:
-	lea	IPX_byte_626+8(pc),a0
+	lea	IPX_FilesList_R5+8(pc),a0
 	move.w	#quartz_quadrant_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunAct_3
 ; -----------------------------------------------------------------------------
 ;IPX_loc_48C:
 IPX_LoadAndRun_R61:
-	lea	IPX_byte_630(pc),a0
+	lea	IPX_FilesList_R6(pc),a0
 	move.w	#wacky_workbench_zone_act_1,(IPX_CurrentZoneAndAct).l
-	bra.s	IPX_RunActs_1_2
+	bra.s	IPX_RunAct_1_2
 ; -----------------------------------------------------------------------------
 ;IPX_loc_49A:
 IPX_LoadAndRun_R62:
-	lea	IPX_byte_630+4(pc),a0
+	lea	IPX_FilesList_R6+4(pc),a0
 	move.w	#wacky_workbench_zone_act_2,(IPX_CurrentZoneAndAct).l
-	bra.s	IPX_RunActs_1_2
+	bra.s	IPX_RunAct_1_2
 ; -----------------------------------------------------------------------------
 ;IPX_loc_4A8:
 IPX_LoadAndRun_R63:
-	lea	IPX_byte_630+8(pc),a0
+	lea	IPX_FilesList_R6+8(pc),a0
 	move.w	#wacky_workbench_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunAct_3
 ; -----------------------------------------------------------------------------
 ;IPX_loc_4B8:
 IPX_LoadAndRun_R71:
-	lea	IPX_byte_63A(pc),a0
+	lea	IPX_FilesList_R7(pc),a0
 	move.w	#stardust_speedway_zone_act_1,(IPX_CurrentZoneAndAct).l
-	bra.s	IPX_RunActs_1_2
+	bra.s	IPX_RunAct_1_2
 ; -----------------------------------------------------------------------------
 ;IPX_loc_4C6:
 IPX_LoadAndRun_R72:
-	lea	IPX_byte_63A+4(pc),a0
+	lea	IPX_FilesList_R7+4(pc),a0
 	move.w	#stardust_speedway_zone_act_2,(IPX_CurrentZoneAndAct).l
-	bra.s	IPX_RunActs_1_2
+	bra.s	IPX_RunAct_1_2
 ; -----------------------------------------------------------------------------
 ;IPX_loc_4D4:
 IPX_LoadAndRun_R73:
-	lea	IPX_byte_63A+8(pc),a0
+	lea	IPX_FilesList_R7+8(pc),a0
 	move.w	#stardust_speedway_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunAct_3
 ; -----------------------------------------------------------------------------
 ;IPX_loc_4E4:
 IPX_LoadAndRun_R81:
-	lea	IPX_byte_644(pc),a0
+	lea	IPX_FilesList_R8(pc),a0
 	move.w	#metallic_madness_zone_act_1,(IPX_CurrentZoneAndAct).l
-	bra.s	IPX_RunActs_1_2
+	bra.s	IPX_RunAct_1_2
 ; -----------------------------------------------------------------------------
 ;IPX_loc_4F2:
 IPX_LoadAndRun_R82:
-	lea	IPX_byte_644+4(pc),a0
+	lea	IPX_FilesList_R8+4(pc),a0
 	move.w	#metallic_madness_zone_act_2,(IPX_CurrentZoneAndAct).l
-	bra.s	IPX_RunActs_1_2
+	bra.s	IPX_RunAct_1_2
 ; -----------------------------------------------------------------------------
 ;IPX_loc_500:
 IPX_LoadAndRun_R83:
-	lea	IPX_byte_644+8(pc),a0
+	lea	IPX_FilesList_R8+8(pc),a0
 	move.w	#metallic_madness_zone_act_3,(IPX_CurrentZoneAndAct).l
 	bra.w	IPX_RunAct_3
 ; -----------------------------------------------------------------------------
+; This function is heavily modified to implement the random time zones feature.
 ; IPX_loc_510:
-IPX_RunActs_1_2:
-	bsr.w	IPX_RandomTimezone
+IPX_RunAct_1_2:
+	; Before starting the level, pick a random time zone.
+	bsr.w	IPX_RandomTimeZone_Pick
+	; Save the picked-up time zone for future use if we are warping.
 	move.b	(IPX_CurrentTimeZone).l,(IPX_PreviousTimeZone).l
 	andi.b	#3,(IPX_PreviousTimeZone).l
+
+	; Load and run the current level in the picked-up time zone.
 	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_unk_1508).l
-	beq.s	IPX_loc_55E
+	; The current level was unloaded.
+	; Is it because the lives counter reached 0?
+	tst.b	(IPX_LifeCount).l
+	beq.s	IPX_EndOfAct_1_2
+	; Is it because we reached the end of the act?
+	; Note that setting bit 7 of IPX_CurrentTimeZone looks like a dirty workaround...
 	btst	#7,(IPX_CurrentTimeZone).l
-	beq.s	IPX_loc_55E
+	beq.s	IPX_EndOfAct_1_2
 
-	; Warp (cutscene disabled)
+	; If none of the above applies, this is because we are warping to another time zone.
+	; The warp cutscene is nothing more than a fancy animation and a way to lose your time.
+	; It is perfectly safe to remove it: this makes the warp to another time zone
+	; almost instantaneous (besides loading the proper time zone).
+    if removeWarpCutscene=0
+	moveq	#warp_file,d0
+	bsr.w	IPX_LoadAndRunFile
+    endif
+
+	; Loop to pick another time zone (following the past/future logic) and run the level.
 	bset	#2,(IPX_PreviousGameMode).l
-	bra.s	IPX_RunActs_1_2
+	bra.s	IPX_RunAct_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_55E:
-	tst.b	(IPX_unk_1508).l
+;IPX_loc_55E:
+IPX_EndOfAct_1_2:
+	; Is the lives counter reached 0?
+	tst.b	(IPX_LifeCount).l
 	bne.s	IPX_loc_56C
+
 	; Game over
-	bra.s	IPX_RunAct_GameOver
+	bra.s	IPX_GameOver
 ; -----------------------------------------------------------------------------
 
 IPX_loc_56C:
-	tst.b	(IPX_unk_156E).l
+	tst.b	(IPX_SpecialStageFlag).l
 	bne.s	IPX_loc_576
 	; End of act
 	bset	#1,(IPX_PreviousGameMode).l
-	bra.w	IPX_TestMachineFlag_EndLevel
+	bra.w	IPX_CheckEndLevel_Acts_1_2
 ; -----------------------------------------------------------------------------
 
 IPX_loc_576: 
 	; Special stage
 	bset	#1,(IPX_PreviousGameMode).l
-	bsr.w	IPX_TestMachineFlag_EndLevel
+	bsr.w	IPX_CheckEndLevel_Acts_1_2
 
 	cmpi.b	#$7F,(IPX_TimeStones_Array).l
 	beq.w	IPX_SecretSpecialStage
@@ -510,16 +571,16 @@ IPX_loc_5B2:
 ; -----------------------------------------------------------------------------
 ; IPX_loc_5B4:
 IPX_RunAct_3:
-	bsr.w	IPX_RandomTimezone
+	bsr.w	IPX_RandomTimeZone_Pick
 	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_unk_1508).l
+	tst.b	(IPX_LifeCount).l
 	bne.s	IPX_loc_5D8
 
-IPX_RunAct_GameOver:
+IPX_GameOver:
 	; Game over
 	move.l	(sp)+,d0
-	bra.w	IPX_loc_39E
+	bra.w	IPX_CleanupOnGameOver
 ; -----------------------------------------------------------------------------
 
 IPX_loc_5D8:
@@ -535,8 +596,9 @@ IPX_loc_5EE:
 	move.b	#0,(IPX_unk_158E).l
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_loc_39E:
+; Cleanup some variables on Game Over before returning to the title screen.
+;IPX_loc_39E:
+IPX_CleanupOnGameOver:
 	move.b	#0,(IPX_CurrentAct).l
 	move.w	(IPX_CurrentZoneAndAct).l,(IPX_CurrentZoneInSave).l
 
@@ -554,43 +616,49 @@ IPX_loc_5F8:
 IPX_byte_606:
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_byte_608:
-	dc.b	R11A_file, R11B_file, R11C_file, R11D_file
-	dc.b	R12A_file, R12B_file, R12C_file, R12D_file
-	dc.b	R13C_file, R13D_file
-IPX_byte_612:
-	dc.b	R31A_file, R31B_file, R31C_file, R31D_file
-	dc.b	R32A_file, R32B_file, R32C_file, R32D_file
-	dc.b	R33C_file, R33D_file
-IPX_byte_61C:
-	dc.b	R41A_file, R41B_file, R41C_file, R41D_file
-	dc.b	R42A_file, R42B_file, R42C_file, R42D_file
-	dc.b	R43C_file, R43D_file
-IPX_byte_626:
-	dc.b	R51A_file, R51B_file, R51C_file, R51D_file
-	dc.b	R52A_file, R52B_file, R52C_file, R52D_file
-	dc.b	R53C_file, R53D_file
-IPX_byte_630:
-	dc.b	R61A_file, R61B_file, R61C_file, R61D_file
-	dc.b	R62A_file, R62B_file, R62C_file, R62D_file
-	dc.b	R63C_file, R63D_file
-IPX_byte_63A:
-	dc.b	R71A_file, R71B_file, R71C_file, R71D_file
-	dc.b	R72A_file, R72B_file, R72C_file, R72D_file
-	dc.b	R73C_file, R73D_file
-IPX_byte_644:
-	dc.b	R81A_file, R81B_file, R81C_file, R81D_file
-	dc.b	R82A_file, R82B_file, R82C_file, R82D_file
-	dc.b	R83C_file, R83D_file
+;IPX_byte_608:
+IPX_FilesList_R1:
+	dc.b	R11A_file, R11B_file, R11C_file, R11D_file ; Act 1
+	dc.b	R12A_file, R12B_file, R12C_file, R12D_file ; Act 2
+	dc.b	R13C_file, R13D_file                       ; Act 3
+;IPX_byte_612:
+IPX_FilesList_R3:
+	dc.b	R31A_file, R31B_file, R31C_file, R31D_file ; Act 1
+	dc.b	R32A_file, R32B_file, R32C_file, R32D_file ; Act 2
+	dc.b	R33C_file, R33D_file                       ; Act 3
+;IPX_byte_61C:
+IPX_FilesList_R4:
+	dc.b	R41A_file, R41B_file, R41C_file, R41D_file ; Act 1
+	dc.b	R42A_file, R42B_file, R42C_file, R42D_file ; Act 2
+	dc.b	R43C_file, R43D_file                       ; Act 3
+;IPX_byte_626:
+IPX_FilesList_R5:
+	dc.b	R51A_file, R51B_file, R51C_file, R51D_file ; Act 1
+	dc.b	R52A_file, R52B_file, R52C_file, R52D_file ; Act 2
+	dc.b	R53C_file, R53D_file                       ; Act 3
+;IPX_byte_630:
+IPX_FilesList_R6:
+	dc.b	R61A_file, R61B_file, R61C_file, R61D_file ; Act 1
+	dc.b	R62A_file, R62B_file, R62C_file, R62D_file ; Act 2
+	dc.b	R63C_file, R63D_file                       ; Act 3
+;IPX_byte_63A:
+IPX_FilesList_R7:
+	dc.b	R71A_file, R71B_file, R71C_file, R71D_file ; Act 1
+	dc.b	R72A_file, R72B_file, R72C_file, R72D_file ; Act 2
+	dc.b	R73C_file, R73D_file                       ; Act 3
+;IPX_byte_644:
+IPX_FilesList_R8:
+	dc.b	R81A_file, R81B_file, R81C_file, R81D_file ; Act 1
+	dc.b	R82A_file, R82B_file, R82C_file, R82D_file ; Act 2
+	dc.b	R83C_file, R83D_file                       ; Act 3
 ; -----------------------------------------------------------------------------
 
-IPX_RandomTimezone:
+IPX_RandomTimeZone_Pick:
 	moveq	#0,d0
 	move.b	(IPX_PreviousGameMode).l,d0
 	move.b	#0,(IPX_PreviousGameMode).l
 	btst	#2,d0
-	bne.w	IPX_RandomTimezone_Warp
+	bne.w	IPX_RandomTimeZone_Warp
 	move.b	#0,(IPX_EggMachine_ActFlag).l
 	btst	#1,d0
 	bne.s	.level
@@ -603,7 +671,7 @@ IPX_RandomTimezone:
 .level:
 	move.w	(IPX_FramesCounter_Level).l,d1
 	btst	#1,(IPX_CurrentAct).l
-	bne.w	IPX_RandomTimezone_Act3
+	bne.w	IPX_RandomTimeZone_BeginLevel_Act_3
 
 .acts_1_2:
 	lsl.w	(IPX_EggMachine_ZoneFlags).l
@@ -612,17 +680,17 @@ IPX_RandomTimezone:
 	move.b	(a0,d1.w),d0
 
 	cmpi.b	#1,d1
-	blt.s	IPX_RandomTimezone_Present
-	beq.s	IPX_RandomTimezone_Past
-	bra.w	IPX_RandomTimezone_Future
+	blt.s	IPX_RandomTimeZone_Present
+	beq.s	IPX_RandomTimeZone_Past
+	bra.w	IPX_RandomTimeZone_Future
 ; -----------------------------------------------------------------------------
 
-IPX_RandomTimezone_Present:
+IPX_RandomTimeZone_Present:
 	move.b	#present,(IPX_CurrentTimeZone).l
 	rts
 ; -----------------------------------------------------------------------------
 
-IPX_RandomTimezone_Past:
+IPX_RandomTimeZone_Past:
 	move.b	#past,(IPX_CurrentTimeZone).l
 	rts
 ; -----------------------------------------------------------------------------
@@ -1168,7 +1236,7 @@ IPX_loc_C6E:
 	bra.w	IPX_loc_D10
 ; -----------------------------------------------------------------------------
 
-IPX_RandomTimezone_Warp_FromFuture:
+IPX_RandomTimeZone_Warp_FromFuture:
 	bclr	#1,d1
 	move.b	(a0,d1.w),d0
 	bchg	#0,d1
@@ -1177,14 +1245,14 @@ IPX_RandomTimezone_Warp_FromFuture:
 	bclr	#7,(IPX_TimeStones_Array).l
 	move.b	#bad_future,(IPX_GoodFuture_ActFlag).l
 	btst	#0,(IPX_EggMachine_ZoneFlags).l
-	bne.w	IPX_RandomTimezone_GoodFuture
+	bne.w	IPX_RandomTimeZone_GoodFuture
 	rts
 ; -----------------------------------------------------------------------------
 
 IPX_SecretSpecialStage:
 	bsr.w	IPX_loc_96A
 	move.b	#1,(IPX_unk_0F22).l
-	move.b	#0,(IPX_unk_156E).l
+	move.b	#0,(IPX_SpecialStageFlag).l
 	rts
 ; -----------------------------------------------------------------------------
 ; RAM variable inside executed code
@@ -1278,37 +1346,37 @@ IPX_loc_D6A:
 	rts
 ; -----------------------------------------------------------------------------
 
-IPX_RandomTimezone_Warp:
+IPX_RandomTimeZone_Warp:
 	move.w	(IPX_FramesCounter_Level).l,d1
 	lsr.w	#4,d1
 	andi.w	#3,d1
 
 	cmpi.b	#1,(IPX_PreviousTimeZone).l
-	blt.s	IPX_RandomTimezone_Warp_FromPast
-	bgt.w	IPX_RandomTimezone_Warp_FromFuture
+	blt.s	IPX_RandomTimeZone_Warp_FromPast
+	bgt.w	IPX_RandomTimeZone_Warp_FromFuture
 
-;IPX_RandomTimezone_Warp_FromPresent:
+;IPX_RandomTimeZone_Warp_FromPresent:
 	btst	#1,(IPX_CurrentTimeZone).l
-	beq.s	IPX_RandomTimezone_Warp_FromPresent_ToPast
+	beq.s	IPX_RandomTimeZone_Warp_FromPresent_ToPast
 
 	bset	#1,d1
 
-IPX_RandomTimezone_Warp_ToFuture:
+IPX_RandomTimeZone_Warp_ToFuture:
 	move.b	(a0,d1.w),d0
-	bra.w	IPX_RandomTimezone_Future
+	bra.w	IPX_RandomTimeZone_Future
 ; -----------------------------------------------------------------------------
 
-IPX_RandomTimezone_Warp_FromPresent_ToPast:
+IPX_RandomTimeZone_Warp_FromPresent_ToPast:
 	move.b	1(a0),d0
 	rts
 ; -----------------------------------------------------------------------------
 
-IPX_RandomTimezone_Warp_FromPast:
+IPX_RandomTimeZone_Warp_FromPast:
 	bsr.w	IPX_TestMachineFlag_Warp
 	btst	#1,d1
-	bne.s	IPX_RandomTimezone_Warp_ToFuture
+	bne.s	IPX_RandomTimeZone_Warp_ToFuture
 
-;IPX_RandomTimezone_Warp_ToPresent:
+;IPX_RandomTimeZone_Warp_ToPresent:
 	move.b	0(a0),d0
 	rts
 ; -----------------------------------------------------------------------------
