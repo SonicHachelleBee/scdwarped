@@ -87,7 +87,7 @@ IPX_RamData:
 IPX_SS1_Start:
 	move.b	#0,(IO_SpecialStageToLoad).l
 	move.b	#0,(IO_TimeStones_Array).l
-	bset	#0,(IO_SpecialStage_Flags).l
+	bset	#0,(IO_SpecialStageLockouts).l
 
 	moveq	#special_stage_file,d0
 	bsr.w	IPX_LoadAndRunFile
@@ -97,7 +97,7 @@ IPX_SS1_Start:
 IPX_SS6_Start:
 	move.b	#5,(IO_SpecialStageToLoad).l
 	move.b	#0,(IO_TimeStones_Array).l
-	bset	#0,(IO_SpecialStage_Flags).l
+	bset	#0,(IO_SpecialStageLockouts).l
 
 	moveq	#special_stage_file,d0
 	bsr.w	IPX_LoadAndRunFile
@@ -136,7 +136,7 @@ IPX_NewGame:
 	move.w	d0,(IPX_CurrentZoneAndAct).l
 	move.w	d0,(IPX_CurrentZoneInSave).l
 	move.b	d0,(IPX_GoodFuture_Array).l
-	move.b	d0,(IPX_unk_0F21).l
+	move.b	d0,(IPX_NextSpecialStage).l
 	move.b	d0,(IPX_TimeStones_Array).l
 
 	bsr.w	IPX_SaveData
@@ -532,42 +532,56 @@ IPX_RunAct_1_2:
 IPX_EndOfAct_1_2:
 	; Is the lives counter reached 0?
 	tst.b	(IPX_LifeCount).l
-	bne.s	IPX_loc_56C
+	bne.s	IPX_CheckSpecialStage
 
 	; Game over
 	bra.s	IPX_GameOver
 ; -----------------------------------------------------------------------------
-
-IPX_loc_56C:
+;IPX_loc_56C:
+IPX_CheckSpecialStage:
+	; Is the Special Stage entered?
 	tst.b	(IPX_SpecialStageFlag).l
-	bne.s	IPX_loc_576
+	bne.s	IPX_RunSpecialStage
+
 	; End of act
+	; Perform checks at end of the act. Then continue with the next act.
 	bset	#1,(IPX_PreviousGameMode).l
 	bra.w	IPX_CheckEndLevel_Acts_1_2
 ; -----------------------------------------------------------------------------
-
-IPX_loc_576: 
-	; Special stage
+;IPX_loc_576:
+IPX_RunSpecialStage:
+	; Perform checks at end of the act.
 	bset	#1,(IPX_PreviousGameMode).l
 	bsr.w	IPX_CheckEndLevel_Acts_1_2
 
+	; Are all time stones collected?
+	; Yes, this can happen in one particular case even if we are about to enter a Special Stage.
+	; When all time stones are collected and you enter randomly in the bad future time zone, the bit 7
+	; of the time stones array is used as a workaround to display the bad future badniks and play the
+	; bad future music. This bit is cleared by subroutine IPX_CheckEndLevel_Acts_1_2 above.
+	; However in the level, because the time stones array is equal to $FF and not equal to $7F, this
+	; triggers the spawn of the big ring at the end of the act. And eventually, you can enter in...
+	; As a little easter egg, instead of fixing this small issue, why not enter the 8th secret
+	; Special Stage in that case? :)
 	cmpi.b	#$7F,(IPX_TimeStones_Array).l
-	beq.w	IPX_SecretSpecialStage
+	beq.w	IPX_RunSpecialStage_Secret
 
-	move.b	(IPX_unk_0F21).l,(IO_SpecialStageToLoad).l
+	move.b	(IPX_NextSpecialStage).l,(IO_SpecialStageToLoad).l
 	move.b	(IPX_TimeStones_Array).l,(IO_TimeStones_Array).l
-	bclr	#0,(IO_SpecialStage_Flags).l
+	bclr	#0,(IO_SpecialStageLockouts).l
 
+	; Load and run the Special Stage
 	moveq	#special_stage_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
 	move.b	#1,(IPX_unk_0F22).l
-	cmpi.b	#$7F,(IPX_TimeStones_Array).l
-	bne.s	IPX_loc_5B2
-	move.b	#good_future,(IPX_GoodFuture_ActFlag).l
 
-IPX_loc_5B2:
-	rts
+	; Are all time stones collected?
+	cmpi.b	#$7F,(IPX_TimeStones_Array).l
+	bne.s	.skip
+	; If all time stones are collected, set a good future immediately.
+	move.b	#good_future,(IPX_GoodFuture_ActFlag).l
+.skip:	rts
 ; -----------------------------------------------------------------------------
 ; IPX_loc_5B4:
 IPX_RunAct_3:
@@ -923,8 +937,8 @@ IPX_loc_968:
 IPX_loc_96A:
 	move.b	#7,(IO_SpecialStageToLoad).l
 	move.b	#0,(IO_TimeStones_Array).l
-	bset	#0,(IO_SpecialStage_Flags).l
-	bset	#2,(IO_SpecialStage_Flags).l
+	bset	#0,(IO_SpecialStageLockouts).l
+	bset	#2,(IO_SpecialStageLockouts).l
 
 	moveq	#special_stage_file,d0
 	bsr.w	IPX_LoadAndRunFile
@@ -1074,7 +1088,7 @@ IPX_loc_AD2:
 	subq.w	#1,d0
 	move.b	d0,(IO_SpecialStageToLoad).l
 	move.b	#0,(IO_TimeStones_Array).l
-	bset	#1,(IO_SpecialStage_Flags).l
+	bset	#1,(IO_SpecialStageLockouts).l
 
 	moveq	#special_stage_file,d0
 	bsr.w	IPX_LoadAndRunFile
@@ -1217,7 +1231,7 @@ IPX_LoadSavedData:
 	move.b	(BRAM_unk_2002A8).l,(IPX_unk_0F1D).l
 	move.b	(BRAM_unk_2002A5).l,(IPX_unk_0F18).l
 	move.b	(BRAM_unk_2002A6).l,(IPX_unk_0F19).l
-	move.b	(BRAM_unk_2002AC).l,(IPX_unk_0F21).l
+	move.b	(BRAM_unk_2002AC).l,(IPX_NextSpecialStage).l
 	move.b	(BRAM_TimeStones_Array).l,(IPX_TimeStones_Array).l
 	bsr.w	IPX_loc_D1C
 	rts
@@ -1249,7 +1263,7 @@ IPX_RandomTimeZone_Warp_FromFuture:
 	rts
 ; -----------------------------------------------------------------------------
 
-IPX_SecretSpecialStage:
+IPX_RunSpecialStage_Secret:
 	bsr.w	IPX_loc_96A
 	move.b	#1,(IPX_unk_0F22).l
 	move.b	#0,(IPX_SpecialStageFlag).l
@@ -1279,7 +1293,7 @@ IPX_SaveData:
 	move.b	(IPX_unk_0F1D).l,(BRAM_unk_2002A8).l
 	move.b	(IPX_unk_0F18).l,(BRAM_unk_2002A5).l
 	move.b	(IPX_unk_0F19).l,(BRAM_unk_2002A6).l
-	move.b	(IPX_unk_0F21).l,(BRAM_unk_2002AC).l
+	move.b	(IPX_NextSpecialStage).l,(BRAM_unk_2002AC).l
 	move.b	(IPX_TimeStones_Array).l,(BRAM_TimeStones_Array).l 
 	bsr.w	IPX_loc_D1C
 

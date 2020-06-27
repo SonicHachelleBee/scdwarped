@@ -243,7 +243,7 @@ IPX_unk_0F1C =			$00FF0F1C
 IPX_unk_0F1D =			$00FF0F1D
 IPX_unk_0F1F =			$00FF0F1F
 IPX_TimeStones_Array =		$00FF0F20 ; 1 bit set per obtained time stone
-IPX_unk_0F21 =			$00FF0F21
+IPX_NextSpecialStage =		$00FF0F21 ; Next Special Stage number to load
 IPX_unk_0F22 =			$00FF0F22
 IPX_unk_0F24 =			$00FF0F24
 IPX_unk_0F25 =			$00FF0F25
@@ -257,7 +257,7 @@ IPX_unk_151C =			$00FF151C
 IPX_CurrentTimeZone =		$00FF152E ; Current time zone
 IPX_GoodFuture_ActFlag =	$00FF156A ; For the current act only: 0 = bad future, 1 = good future
 IPX_unk_156D =			$00FF156D
-IPX_SpecialStageFlag =		$00FF156E ; If 1, the special stage has to be loaded next.
+IPX_SpecialStageFlag =		$00FF156E ; If 1, the special stage has to be loaded at the end of the act.
 IPX_unk_1577 =			$00FF1577
 IPX_unk_1580 =			$00FF1580
 IPX_unk_158E =			$00FF158E
@@ -316,7 +316,9 @@ IO_unk_A01C0A =			$00A01C0A
 IO_unk_A12000 =			$00A12000
 IO_unk_A12003 =			$00A12003
 IO_unk_A12010 =			$00A12010
-IO_SpecialStageToLoad =		$00A12013
-IO_TimeStones_Array =		$00A1201A
-IO_SpecialStage_Flags =		$00A1201B
+IO_SpecialStageToLoad =		$00A12013 ; Special Stage number to load
+IO_TimeStones_Array =		$00A1201A ; 1 bit set per obtained time stone
+IO_SpecialStageLockouts =	$00A1201B ; Array of bits that controls the way the Special Stage is working.
+				          ; This controls the display of the score tally, if a time stone
+					  ; is granted as a reward or not, and the pause button.
 IO_unk_A12020 =			$00A12020

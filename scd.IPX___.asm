@@ -86,7 +86,7 @@ IPX_RamData:
 IPX_SS1_Start:
 	move.b	#0,(IO_SpecialStageToLoad).l
 	move.b	#0,(IO_TimeStones_Array).l
-	bset	#0,(IO_SpecialStage_Flags).l
+	bset	#0,(IO_SpecialStageLockouts).l
 
 	moveq	#special_stage_file,d0
 	bsr.w	IPX_LoadAndRunFile
@@ -96,7 +96,7 @@ IPX_SS1_Start:
 IPX_SS6_Start:
 	move.b	#5,(IO_SpecialStageToLoad).l
 	move.b	#0,(IO_TimeStones_Array).l
-	bset	#0,(IO_SpecialStage_Flags).l
+	bset	#0,(IO_SpecialStageLockouts).l
 
 	moveq	#special_stage_file,d0
 	bsr.w	IPX_LoadAndRunFile
@@ -131,7 +131,7 @@ IPX_NewGame:
 	move.w	d0,(IPX_CurrentZoneAndAct).l
 	move.w	d0,(IPX_CurrentZoneInSave).l
 	move.b	d0,(IPX_GoodFuture_Array).l
-	move.b	d0,(IPX_unk_0F21).l
+	move.b	d0,(IPX_NextSpecialStage).l
 	move.b	d0,(IPX_TimeStones_Array).l
 
 	bsr.w	IPX_SaveData
@@ -482,34 +482,40 @@ IPX_RunAct_WarpLoop:
 IPX_EndOfAct_1_2:
 	; Is the lives counter reached 0?
 	tst.b	(IPX_LifeCount).l
-	bne.s	IPX_loc_56C
+	bne.s	IPX_CheckSpecialStage
 
 	; Game over
 	move.l	(sp)+,d0
 	bra.w	IPX_CleanupOnGameOver
 ; -----------------------------------------------------------------------------
-
-IPX_loc_56C:
+;IPX_loc_56C:
+IPX_CheckSpecialStage:
+	; Is the Special Stage entered?
 	tst.b	(IPX_SpecialStageFlag).l
-	bne.s	IPX_loc_576
+	bne.s	IPX_RunSpecialStage
+
+	; End of act.
+	; Return and continue with the next act.
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_loc_576:
-	move.b	(IPX_unk_0F21).l,(IO_SpecialStageToLoad).l
+;IPX_loc_576:
+IPX_RunSpecialStage:
+	move.b	(IPX_NextSpecialStage).l,(IO_SpecialStageToLoad).l
 	move.b	(IPX_TimeStones_Array).l,(IO_TimeStones_Array).l
-	bclr	#0,(IO_SpecialStage_Flags).l
+	bclr	#0,(IO_SpecialStageLockouts).l
 
-	moveq	#$75,d0
+	; Load and run the Special Stage
+	moveq	#special_stage_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
 	move.b	#1,(IPX_unk_0F22).l
-	cmpi.b	#$7F,(IPX_TimeStones_Array).l
-	bne.s	IPX_loc_5B2
-	move.b	#good_future,(IPX_GoodFuture_ActFlag).l
 
-IPX_loc_5B2:
-	rts
+	; Are all time stones collected?
+	cmpi.b	#$7F,(IPX_TimeStones_Array).l
+	bne.s	.skip
+	; If all time stones are collected, set a good future immediately.
+	move.b	#good_future,(IPX_GoodFuture_ActFlag).l
+.skip:	rts
 ; -----------------------------------------------------------------------------
 ;IPX_loc_5B4:
 IPX_RunAct_3:
@@ -801,8 +807,8 @@ IPX_loc_968:
 IPX_loc_96A:
 	move.b	#7,(IO_SpecialStageToLoad).l
 	move.b	#0,(IO_TimeStones_Array).l
-	bset	#0,(IO_SpecialStage_Flags).l
-	bset	#2,(IO_SpecialStage_Flags).l
+	bset	#0,(IO_SpecialStageLockouts).l
+	bset	#2,(IO_SpecialStageLockouts).l
 
 	moveq	#$75,d0
 	bsr.w	IPX_LoadAndRunFile
@@ -952,7 +958,7 @@ IPX_loc_AD2:
 	subq.w	#1,d0
 	move.b	d0,(IO_SpecialStageToLoad).l
 	move.b	#0,(IO_TimeStones_Array).l
-	bset	#1,(IO_SpecialStage_Flags).l
+	bset	#1,(IO_SpecialStageLockouts).l
 
 	moveq	#$75,d0
 	bsr.w	IPX_LoadAndRunFile
@@ -1065,7 +1071,7 @@ IPX_LoadSavedData:
 	move.b	(MMD_unk_2002A8).l,(IPX_unk_0F1D).l
 	move.b	(MMD_unk_2002A5).l,(IPX_unk_0F18).l
 	move.b	(MMD_unk_2002A6).l,(IPX_unk_0F19).l
-	move.b	(MMD_unk_2002AC).l,(IPX_unk_0F21).l
+	move.b	(MMD_unk_2002AC).l,(IPX_NextSpecialStage).l
 	move.b	(MMD_unk_2002AD).l,(IPX_TimeStones_Array).l
 	bsr.w	IPX_loc_D1C
 	rts
@@ -1092,7 +1098,7 @@ IPX_SaveData:
 	move.b	(IPX_unk_0F1D).l,(MMD_unk_2002A8).l
 	move.b	(IPX_unk_0F18).l,(MMD_unk_2002A5).l
 	move.b	(IPX_unk_0F19).l,(MMD_unk_2002A6).l
-	move.b	(IPX_unk_0F21).l,(MMD_unk_2002AC).l
+	move.b	(IPX_NextSpecialStage).l,(MMD_unk_2002AC).l
 	move.b	(IPX_TimeStones_Array).l,(MMD_unk_2002AD).l
 	bsr.w	IPX_loc_D1C
 
