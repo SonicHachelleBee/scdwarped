@@ -519,41 +519,55 @@ IPX_RunSpecialStage:
 ; -----------------------------------------------------------------------------
 ;IPX_loc_5B4:
 IPX_RunAct_3:
+	; Load the good future time zone as default at the beginning.
 	moveq	#0,d0
-
 	_move.b	0(a0),d0
+
+	; Let's explain what is going on here.
+	; At the end of act 1, IPX_GoodFuture_ActFlag is copied into IPX_GoodFuture_ZoneFlags.
+	; After that, the flag is erased, and act 2 begins.
+	; At the end of act 2, IPX_GoodFuture_ActFlag is also copied into IPX_GoodFuture_ZoneFlags.
+	; However this time, the flag is not erased. The flag is consolidated with both values
+	; from act 1 and act 2 stored in IPX_GoodFuture_ZoneFlags. Then, act 3 begins.
 	tst.b	(IPX_GoodFuture_ActFlag).l
-	bne.s	IPX_loc_5C6
+	bne.s	.skip
+	; Load the bad future time zone
 	move.b	1(a0),d0
 
-IPX_loc_5C6:
-	bsr.w	IPX_LoadAndRunFile
+	; Load and run the current level in the specified time zone.
+.skip:	bsr.w	IPX_LoadAndRunFile
 
+	; The current level was unloaded.
+	; Is it because the lives counter reached 0?
 	tst.b	(IPX_LifeCount).l
-	bne.s	IPX_loc_5D8
+	bne.s	IPX_EndOfAct_3
 
+	; Game over
 	move.l	(sp)+,d0
 	bra.w	IPX_CleanupOnGameOver
 ; -----------------------------------------------------------------------------
-
-IPX_loc_5D8:
+;IPX_loc_5D8:
+IPX_EndOfAct_3:
+	; Add one zone completed in the saved data
 	addq.b	#1,(IPX_CurrentZoneInSave).l
+
+	; Ensure we are not over the 7th and last zone
 	cmpi.b	#7,(IPX_CurrentZoneInSave).l
-	bcs.s	IPX_loc_5EE
+	bcs.s	.skip
 	subq.b	#1,(IPX_CurrentZoneInSave).l
 
-IPX_loc_5EE:
-	move.b	#0,(IPX_unk_158E).l
+	; End of act.
+	; Return and continue with the next zone and act (or end of game).
+.skip:	move.b	#0,(IPX_unk_158E).l
 	rts
 ; -----------------------------------------------------------------------------
-
+; I don't quite understand what is going on here.
+; It seems to be linked with the number of acts you have completed.
 IPX_loc_5F8:
 	cmp.b	(IPX_unk_0F18).l,d0
-	bls.s	IPX_byte_606
+	bls.s	.ret
 	move.b	d0,(IPX_unk_0F18).l
-
-IPX_byte_606:
-	rts
+.ret:	rts
 ; -----------------------------------------------------------------------------
 ;IPX_byte_608:
 IPX_FilesList_R1:

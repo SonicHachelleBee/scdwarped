@@ -535,7 +535,7 @@ IPX_EndOfAct_1_2:
 	bne.s	IPX_CheckSpecialStage
 
 	; Game over
-	bra.s	IPX_GameOver
+	bra.s	IPX_GameOver ; Small space optimization
 ; -----------------------------------------------------------------------------
 ;IPX_loc_56C:
 IPX_CheckSpecialStage:
@@ -583,31 +583,44 @@ IPX_RunSpecialStage:
 	move.b	#good_future,(IPX_GoodFuture_ActFlag).l
 .skip:	rts
 ; -----------------------------------------------------------------------------
+; This function is heavily modified to implement the random time zones feature.
 ; IPX_loc_5B4:
 IPX_RunAct_3:
+	; Before starting the level, pick a random time zone.
 	bsr.w	IPX_RandomTimeZone_Pick
+	; Load and run the current level in the picked-up time zone.
 	bsr.w	IPX_LoadAndRunFile
 
+	; The current level was unloaded.
+	; Is it because the lives counter reached 0?
 	tst.b	(IPX_LifeCount).l
-	bne.s	IPX_loc_5D8
+	bne.s	IPX_EndOfAct_3
 
 IPX_GameOver:
 	; Game over
 	move.l	(sp)+,d0
 	bra.w	IPX_CleanupOnGameOver
 ; -----------------------------------------------------------------------------
-
-IPX_loc_5D8:
-	; End of act
-	bclr	#7,(IPX_TimeStones_Array).l
+;IPX_loc_5D8:
+IPX_EndOfAct_3:
 	bset	#1,(IPX_PreviousGameMode).l
+
+	; Remove the workaround on the time stones array by clearing the last unused bit of the byte
+	; array. This workaround is used in the bad future time zone to display bad future badniks and
+	; play the bad future music even if all the time stones are already collected.
+	bclr	#7,(IPX_TimeStones_Array).l
+
+	; Add one zone completed in the saved data
 	addq.b	#1,(IPX_CurrentZoneInSave).l
+
+	; Ensure we are not over the 7th and last zone
 	cmpi.b	#7,(IPX_CurrentZoneInSave).l
-	bcs.s	IPX_loc_5EE
+	bcs.s	.skip
 	subq.b	#1,(IPX_CurrentZoneInSave).l
 
-IPX_loc_5EE:
-	move.b	#0,(IPX_unk_158E).l
+	; End of act.
+	; Return and continue with the next zone and act (or end of game).
+.skip:	move.b	#0,(IPX_unk_158E).l
 	rts
 ; -----------------------------------------------------------------------------
 ; Cleanup some variables on Game Over before returning to the title screen.
@@ -621,14 +634,13 @@ IPX_CleanupOnGameOver:
 	move.b	#bad_future,(IPX_GoodFuture_ActFlag).l
 	rts
 ; -----------------------------------------------------------------------------
-
+; I don't quite understand what is going on here.
+; It seems to be linked with the number of acts you have completed.
 IPX_loc_5F8:
 	cmp.b	(IPX_unk_0F18).l,d0
-	bls.s	IPX_byte_606
+	bls.s	.ret
 	move.b	d0,(IPX_unk_0F18).l
-
-IPX_byte_606:
-	rts
+.ret:	rts
 ; -----------------------------------------------------------------------------
 ;IPX_byte_608:
 IPX_FilesList_R1:
@@ -666,7 +678,33 @@ IPX_FilesList_R8:
 	dc.b	R82A_file, R82B_file, R82C_file, R82D_file ; Act 2
 	dc.b	R83C_file, R83D_file                       ; Act 3
 ; -----------------------------------------------------------------------------
-
+; Probably the most important function of Sonic CD Warped.
+; Before starting a new level, a call to this function randomly pick-up a time zone.
+; The time zone can be past, present, bad future or good future, regardless of
+; the good future flag IPX_GoodFuture_ActFlag that is set when you destroy an Eggman machine.
+;
+; To avoid serious issues and keep the gameplay clean, a number of countermeasures are implemented.
+; For a start, IPX_EggMachine_ActFlag replaces IPX_GoodFuture_ActFlag when necessary. This new flag
+; actually is the reference to tell if the Eggman machine was destroyed or not. The decision to
+; grant the good ending at the end of the game is based on this new flag. IPX_GoodFuture_ActFlag is
+; now used only to display the bad future and good future time zones properly.
+;
+; However, IPX_EggMachine_ActFlag is not set when you actually destroy the Eggman machine (because this
+; would require to edit in hex a lot of files of Sonic CD, and I don't want to do that too often).
+; The flag is set based on IPX_GoodFuture_ActFlag when you quit the past time zone, either by ending
+; the level, or by warping to another time zone.
+;
+; As side effects to this, you can make a good future at the end of the bad future time zone, and you
+; can make a bad future at the end of the good future time zone. It is already implemented in the
+; original game, probably due to copy/paste of the score tally object.
+; Now, you make a good future only if the IPX_EggMachine_ActFlag is set.
+;
+; Another thing, even if the time zones are picked-up randomly, this continues to follow the past/future
+; logic. This means:
+; - If you are in the past, you can warp to present, bad future or good future (yes, directly!).
+; - If you are in the future (bad or good), you can warp to present or to past (again, yes, directly!).
+; - If you are in the present with a past signpost activated, you can only warp to past.
+; - If you are in the present with a future signpost activated, you can warp to bad future or good future.
 IPX_RandomTimeZone_Pick:
 	moveq	#0,d0
 	move.b	(IPX_PreviousGameMode).l,d0
