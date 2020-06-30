@@ -706,58 +706,65 @@ IPX_FilesList_R8:
 ; - If you are in the present with a past signpost activated, you can only warp to past.
 ; - If you are in the present with a future signpost activated, you can warp to bad future or good future.
 IPX_RandomTimeZone_Pick:
+	; Test the game mode we were in before starting the level.
 	moveq	#0,d0
 	move.b	(IPX_PreviousGameMode).l,d0
-	move.b	#0,(IPX_PreviousGameMode).l
+	move.b	#0,(IPX_PreviousGameMode).l ; Reset the previous game mode value
+
+	; Were we already in a level and warping to another time zone?
 	btst	#2,d0
-	bne.w	IPX_RandomTimeZone_Warp
+	bne.w	IPX_RandomTimeZone_PickAfterWarp
+
+	; If not, this is the start of a new level.
+	; Reset the Eggman machine flag.
 	move.b	#0,(IPX_EggMachine_ActFlag).l
+	; Were we in another level or special stage?
 	btst	#1,d0
-	bne.s	.level
+	bne.s	IPX_RandomTimeZone_PickAfterLevel
 
-;.titleScreen:
+	; If not, the only other option is that we were in the title screen.
+	; Pick the frames counter value used during the title screen.
 	move.w	(FramesCounter).w,d1
-	bra.s	.acts_1_2
-; - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+	bra.s	IPX_RandomTimeZone_PickAfterTitleScreen
+; -----------------------------------------------------------------------------
 
-.level:
+IPX_RandomTimeZone_PickAfterLevel:
+	; Pick the frames counter value used during the previous level.
 	move.w	(IPX_FramesCounter_Level).l,d1
+	; Are we starting act 3?
+	; There is a dedicated function for act 3 to handle only the bad future
+	; and the good future time zones.
 	btst	#1,(IPX_CurrentAct).l
 	bne.w	IPX_RandomTimeZone_BeginLevel_Act_3
 
-.acts_1_2:
+	; Now that the frames counter value is picked-up, the same function applies
+	; if we are coming from another level or from the title screen.
+	; Note that this function only covers act 1 and act 2.
+IPX_RandomTimeZone_PickAfterTitleScreen:
+	; Shift the flag to the left in case we are starting act 2.
+	; No effect at the beginning of act 1 (shift of value 0).
 	lsl.w	(IPX_EggMachine_ZoneFlags).l
+
+	; Pick-up a random time zone based on the frames counter value.
 	lsr.w	#4,d1
-	andi.w	#3,d1
-	move.b	(a0,d1.w),d0
+	andi.w	#3,d1 ; Can be 0, 1, 2 or 3
+	move.b	(a0,d1.w),d0 ; Load the corresponding time zone.
 
+	; Jump to dedicated functions.
 	cmpi.b	#1,d1
-	blt.s	IPX_RandomTimeZone_Present
-	beq.s	IPX_RandomTimeZone_Past
-	bra.w	IPX_RandomTimeZone_Future
+	blt.s	IPX_RandomTimeZone_Present ; 0
+	beq.s	IPX_RandomTimeZone_Past    ; 1
+	bra.w	IPX_RandomTimeZone_Future  ; 2 or 3
 ; -----------------------------------------------------------------------------
-
+; Actions to perform when we are going to load a level in the present time zone.
 IPX_RandomTimeZone_Present:
 	move.b	#present,(IPX_CurrentTimeZone).l
 	rts
 ; -----------------------------------------------------------------------------
-
+; Actions to perform when we are going to load a level in the past time zone.
 IPX_RandomTimeZone_Past:
 	move.b	#past,(IPX_CurrentTimeZone).l
 	rts
-; -----------------------------------------------------------------------------
-; CD-ROM section interleaved with the code.
-	if * > $16F5A20
-		fatal "IPX___.MMD CD-ROM section is erased! $\{*} > $16F5A20"
-	else
-		message "IPX___.MMD CD-ROM section: $\{*} <= $16F5A20"
-	endif
-
-	org		$16F5A20
-	BINCLUDE	"scd.IPX___.cd_section.bin"
-
-	; Pretend that the CD-ROM section doesn't exist
-	phase		$16F5A20
 ; -----------------------------------------------------------------------------
 ; IPX_loc_64E:
 IPX_LevelSelect:
@@ -1398,7 +1405,7 @@ IPX_loc_D6A:
 	rts
 ; -----------------------------------------------------------------------------
 
-IPX_RandomTimeZone_Warp:
+IPX_RandomTimeZone_PickAfterWarp:
 	move.w	(IPX_FramesCounter_Level).l,d1
 	lsr.w	#4,d1
 	andi.w	#3,d1
