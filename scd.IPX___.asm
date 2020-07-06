@@ -607,108 +607,110 @@ IPX_FilesList_R8:
 ; -----------------------------------------------------------------------------
 ;IPX_loc_64E:
 IPX_LevelSelect:
-	moveq	#6,d0
+	moveq	#level_select_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
+	; Load and run the selected level
 	mulu.w	#6,d0
-	move.w	IPX_byte_68A+2(pc,d0.w),(IPX_CurrentZoneAndAct).l
-	move.b	IPX_byte_68A+4(pc,d0.w),(IPX_CurrentTimeZone).l
-	move.b	IPX_byte_68A+5(pc,d0.w),(IPX_GoodFuture_ActFlag).l
-	move.w	IPX_byte_68A(pc,d0.w),d0
+	move.w	IPX_LevelSelect_List+2(pc,d0.w),(IPX_CurrentZoneAndAct).l
+	move.b	IPX_LevelSelect_List+4(pc,d0.w),(IPX_CurrentTimeZone).l
+	move.b	IPX_LevelSelect_List+5(pc,d0.w),(IPX_GoodFuture_ActFlag).l
+	move.w	IPX_LevelSelect_List(pc,d0.w),d0
 	move.b	#0,(IPX_unk_156D).l
 
-	cmpi.w	#$75,d0
+	cmpi.w	#special_stage_file,d0
 	beq.w	IPX_SS1_Start
 	bsr.w	IPX_LoadAndRunFile
 	rts
 ; -----------------------------------------------------------------------------
-
-ipx_68A_macro	macro	word1,word2,byte1,byte2
-	dc.w	word1
-	dc.w	word2
-	dc.b	byte1
-	dc.b	byte2
+; Macro defining a level select entry
+ipx_lvlentry_macro	macro	file,zone_and_act,time_zone,good_future_flag
+	dc.w	file
+	dc.w	zone_and_act
+	dc.b	time_zone
+	dc.b	good_future_flag
 	endm
 
-IPX_byte_68A:
-	ipx_68A_macro	    1,    palmtree_panic_zone_act_1, present,  bad_future
-	ipx_68A_macro	    2,    palmtree_panic_zone_act_1,    past,  bad_future
-	ipx_68A_macro	    3,    palmtree_panic_zone_act_1,  future, good_future
-	ipx_68A_macro	    4,    palmtree_panic_zone_act_1,  future,  bad_future
-	ipx_68A_macro	    7,    palmtree_panic_zone_act_2, present,  bad_future
-	ipx_68A_macro	    8,    palmtree_panic_zone_act_2,    past,  bad_future
-	ipx_68A_macro	    9,    palmtree_panic_zone_act_2,  future, good_future
-	ipx_68A_macro	   $A,    palmtree_panic_zone_act_2,  future,  bad_future
-	ipx_68A_macro	   $C,                            0,       0,           0
-	ipx_68A_macro	  $D7,                            0,       0,           0
-	ipx_68A_macro	  $D8,                            0,       0,           0
-	ipx_68A_macro	  $28,   collision_chaos_zone_act_1, present,  bad_future
-	ipx_68A_macro	  $29,   collision_chaos_zone_act_1,    past,  bad_future
-	ipx_68A_macro	  $2A,   collision_chaos_zone_act_1,  future, good_future
-	ipx_68A_macro	  $2B,   collision_chaos_zone_act_1,  future,  bad_future
-	ipx_68A_macro	  $2C,   collision_chaos_zone_act_2, present,  bad_future
-	ipx_68A_macro	  $2D,   collision_chaos_zone_act_2,    past,  bad_future
-	ipx_68A_macro	  $2E,   collision_chaos_zone_act_2,  future, good_future
-	ipx_68A_macro	  $2F,   collision_chaos_zone_act_2,  future,  bad_future
-	ipx_68A_macro	  $30,   collision_chaos_zone_act_3,  future, good_future
-	ipx_68A_macro	  $31,   collision_chaos_zone_act_3,  future,  bad_future
-	ipx_68A_macro	  $32,    palmtree_panic_zone_act_3,  future, good_future
-	ipx_68A_macro	  $33,    palmtree_panic_zone_act_3,  future,  bad_future
-	ipx_68A_macro	  $34,     tidal_tempest_zone_act_1, present,  bad_future
-	ipx_68A_macro	  $35,     tidal_tempest_zone_act_1,    past,  bad_future
-	ipx_68A_macro	  $36,     tidal_tempest_zone_act_1,  future, good_future
-	ipx_68A_macro	  $37,     tidal_tempest_zone_act_1,  future,  bad_future
-	ipx_68A_macro	  $38,     tidal_tempest_zone_act_2, present,  bad_future
-	ipx_68A_macro	  $39,     tidal_tempest_zone_act_2,    past,  bad_future
-	ipx_68A_macro	  $3A,     tidal_tempest_zone_act_2,  future, good_future
-	ipx_68A_macro	  $3B,     tidal_tempest_zone_act_2,  future,  bad_future
-	ipx_68A_macro	  $3C,     tidal_tempest_zone_act_3,  future, good_future
-	ipx_68A_macro	  $3D,     tidal_tempest_zone_act_3,  future,  bad_future
-	ipx_68A_macro	  $3E,   quartz_quadrant_zone_act_1, present,  bad_future
-	ipx_68A_macro	  $3F,   quartz_quadrant_zone_act_1,    past,  bad_future
-	ipx_68A_macro	  $40,   quartz_quadrant_zone_act_1,  future, good_future
-	ipx_68A_macro	  $41,   quartz_quadrant_zone_act_1,  future,  bad_future
-	ipx_68A_macro	  $42,   quartz_quadrant_zone_act_2, present,  bad_future
-	ipx_68A_macro	  $43,   quartz_quadrant_zone_act_2,    past,  bad_future
-	ipx_68A_macro	  $44,   quartz_quadrant_zone_act_2,  future, good_future
-	ipx_68A_macro	  $45,   quartz_quadrant_zone_act_2,  future,  bad_future
-	ipx_68A_macro	  $46,   quartz_quadrant_zone_act_3,  future, good_future
-	ipx_68A_macro	  $47,   quartz_quadrant_zone_act_3,  future,  bad_future
-	ipx_68A_macro	  $48,   wacky_workbench_zone_act_1, present,  bad_future
-	ipx_68A_macro	  $49,   wacky_workbench_zone_act_1,    past,  bad_future
-	ipx_68A_macro	  $4A,   wacky_workbench_zone_act_1,  future, good_future
-	ipx_68A_macro	  $4B,   wacky_workbench_zone_act_1,  future,  bad_future
-	ipx_68A_macro	  $4C,   wacky_workbench_zone_act_2, present,  bad_future
-	ipx_68A_macro	  $4D,   wacky_workbench_zone_act_2,    past,  bad_future
-	ipx_68A_macro	  $4E,   wacky_workbench_zone_act_2,  future, good_future
-	ipx_68A_macro	  $4F,   wacky_workbench_zone_act_2,  future,  bad_future
-	ipx_68A_macro	  $50,   wacky_workbench_zone_act_3,  future, good_future
-	ipx_68A_macro	  $51,   wacky_workbench_zone_act_3,  future,  bad_future
-	ipx_68A_macro	  $52, stardust_speedway_zone_act_1, present,  bad_future
-	ipx_68A_macro	  $53, stardust_speedway_zone_act_1,    past,  bad_future
-	ipx_68A_macro	  $54, stardust_speedway_zone_act_1,  future, good_future
-	ipx_68A_macro	  $55, stardust_speedway_zone_act_1,  future,  bad_future
-	ipx_68A_macro	  $56, stardust_speedway_zone_act_2, present,  bad_future
-	ipx_68A_macro	  $57, stardust_speedway_zone_act_2,    past,  bad_future
-	ipx_68A_macro	  $58, stardust_speedway_zone_act_2,  future, good_future
-	ipx_68A_macro	  $59, stardust_speedway_zone_act_2,  future,  bad_future
-	ipx_68A_macro	  $5A, stardust_speedway_zone_act_3,  future, good_future
-	ipx_68A_macro	  $5B, stardust_speedway_zone_act_3,  future,  bad_future
-	ipx_68A_macro	  $5C,  metallic_madness_zone_act_1, present,  bad_future
-	ipx_68A_macro	  $5D,  metallic_madness_zone_act_1,    past,  bad_future
-	ipx_68A_macro	  $5E,  metallic_madness_zone_act_1,  future, good_future
-	ipx_68A_macro	  $5F,  metallic_madness_zone_act_1,  future,  bad_future
-	ipx_68A_macro	  $60,  metallic_madness_zone_act_2, present,  bad_future
-	ipx_68A_macro	  $61,  metallic_madness_zone_act_2,    past,  bad_future
-	ipx_68A_macro	  $62,  metallic_madness_zone_act_2,  future, good_future
-	ipx_68A_macro	  $63,  metallic_madness_zone_act_2,  future,  bad_future
-	ipx_68A_macro	  $64,  metallic_madness_zone_act_3,  future, good_future
-	ipx_68A_macro	  $65,  metallic_madness_zone_act_3,  future,  bad_future
-	ipx_68A_macro	  $75,                            0,       0,           0
-	ipx_68A_macro	    1,                            0,       1,           0
-	ipx_68A_macro	    1,                            0,       1,           0
-	ipx_68A_macro	    1,                            0,       1,           0
-	ipx_68A_macro	    1,                            0,       1,           0
+;IPX_byte_68A:
+IPX_LevelSelect_List:
+	ipx_lvlentry_macro	  R11A_file,    palmtree_panic_zone_act_1, present,  bad_future
+	ipx_lvlentry_macro	  R11B_file,    palmtree_panic_zone_act_1,    past,  bad_future
+	ipx_lvlentry_macro	  R11C_file,    palmtree_panic_zone_act_1,  future, good_future
+	ipx_lvlentry_macro	  R11D_file,    palmtree_panic_zone_act_1,  future,  bad_future
+	ipx_lvlentry_macro	  R12A_file,    palmtree_panic_zone_act_2, present,  bad_future
+	ipx_lvlentry_macro	  R12B_file,    palmtree_panic_zone_act_2,    past,  bad_future
+	ipx_lvlentry_macro	  R12C_file,    palmtree_panic_zone_act_2,  future, good_future
+	ipx_lvlentry_macro	  R12D_file,    palmtree_panic_zone_act_2,  future,  bad_future
+	ipx_lvlentry_macro	  warp_file,                            0,       0,           0
+	ipx_lvlentry_macro	intro_video_file,                       0,       0,           0
+	ipx_lvlentry_macro	comin_soon_file,                        0,       0,           0
+	ipx_lvlentry_macro	  R31A_file,   collision_chaos_zone_act_1, present,  bad_future
+	ipx_lvlentry_macro	  R31B_file,   collision_chaos_zone_act_1,    past,  bad_future
+	ipx_lvlentry_macro	  R31C_file,   collision_chaos_zone_act_1,  future, good_future
+	ipx_lvlentry_macro	  R31D_file,   collision_chaos_zone_act_1,  future,  bad_future
+	ipx_lvlentry_macro	  R32A_file,   collision_chaos_zone_act_2, present,  bad_future
+	ipx_lvlentry_macro	  R32B_file,   collision_chaos_zone_act_2,    past,  bad_future
+	ipx_lvlentry_macro	  R32C_file,   collision_chaos_zone_act_2,  future, good_future
+	ipx_lvlentry_macro	  R32D_file,   collision_chaos_zone_act_2,  future,  bad_future
+	ipx_lvlentry_macro	  R33C_file,   collision_chaos_zone_act_3,  future, good_future
+	ipx_lvlentry_macro	  R33D_file,   collision_chaos_zone_act_3,  future,  bad_future
+	ipx_lvlentry_macro	  R13C_file,    palmtree_panic_zone_act_3,  future, good_future
+	ipx_lvlentry_macro	  R13D_file,    palmtree_panic_zone_act_3,  future,  bad_future
+	ipx_lvlentry_macro	  R41A_file,     tidal_tempest_zone_act_1, present,  bad_future
+	ipx_lvlentry_macro	  R41B_file,     tidal_tempest_zone_act_1,    past,  bad_future
+	ipx_lvlentry_macro	  R41C_file,     tidal_tempest_zone_act_1,  future, good_future
+	ipx_lvlentry_macro	  R41D_file,     tidal_tempest_zone_act_1,  future,  bad_future
+	ipx_lvlentry_macro	  R42A_file,     tidal_tempest_zone_act_2, present,  bad_future
+	ipx_lvlentry_macro	  R42B_file,     tidal_tempest_zone_act_2,    past,  bad_future
+	ipx_lvlentry_macro	  R42C_file,     tidal_tempest_zone_act_2,  future, good_future
+	ipx_lvlentry_macro	  R42D_file,     tidal_tempest_zone_act_2,  future,  bad_future
+	ipx_lvlentry_macro	  R43C_file,     tidal_tempest_zone_act_3,  future, good_future
+	ipx_lvlentry_macro	  R43D_file,     tidal_tempest_zone_act_3,  future,  bad_future
+	ipx_lvlentry_macro	  R51A_file,   quartz_quadrant_zone_act_1, present,  bad_future
+	ipx_lvlentry_macro	  R51B_file,   quartz_quadrant_zone_act_1,    past,  bad_future
+	ipx_lvlentry_macro	  R51C_file,   quartz_quadrant_zone_act_1,  future, good_future
+	ipx_lvlentry_macro	  R51D_file,   quartz_quadrant_zone_act_1,  future,  bad_future
+	ipx_lvlentry_macro	  R52A_file,   quartz_quadrant_zone_act_2, present,  bad_future
+	ipx_lvlentry_macro	  R52B_file,   quartz_quadrant_zone_act_2,    past,  bad_future
+	ipx_lvlentry_macro	  R52C_file,   quartz_quadrant_zone_act_2,  future, good_future
+	ipx_lvlentry_macro	  R52D_file,   quartz_quadrant_zone_act_2,  future,  bad_future
+	ipx_lvlentry_macro	  R53C_file,   quartz_quadrant_zone_act_3,  future, good_future
+	ipx_lvlentry_macro	  R53D_file,   quartz_quadrant_zone_act_3,  future,  bad_future
+	ipx_lvlentry_macro	  R61A_file,   wacky_workbench_zone_act_1, present,  bad_future
+	ipx_lvlentry_macro	  R61B_file,   wacky_workbench_zone_act_1,    past,  bad_future
+	ipx_lvlentry_macro	  R61C_file,   wacky_workbench_zone_act_1,  future, good_future
+	ipx_lvlentry_macro	  R61D_file,   wacky_workbench_zone_act_1,  future,  bad_future
+	ipx_lvlentry_macro	  R62A_file,   wacky_workbench_zone_act_2, present,  bad_future
+	ipx_lvlentry_macro	  R62B_file,   wacky_workbench_zone_act_2,    past,  bad_future
+	ipx_lvlentry_macro	  R62C_file,   wacky_workbench_zone_act_2,  future, good_future
+	ipx_lvlentry_macro	  R62D_file,   wacky_workbench_zone_act_2,  future,  bad_future
+	ipx_lvlentry_macro	  R63C_file,   wacky_workbench_zone_act_3,  future, good_future
+	ipx_lvlentry_macro	  R63D_file,   wacky_workbench_zone_act_3,  future,  bad_future
+	ipx_lvlentry_macro	  R71A_file, stardust_speedway_zone_act_1, present,  bad_future
+	ipx_lvlentry_macro	  R71B_file, stardust_speedway_zone_act_1,    past,  bad_future
+	ipx_lvlentry_macro	  R71C_file, stardust_speedway_zone_act_1,  future, good_future
+	ipx_lvlentry_macro	  R71D_file, stardust_speedway_zone_act_1,  future,  bad_future
+	ipx_lvlentry_macro	  R72A_file, stardust_speedway_zone_act_2, present,  bad_future
+	ipx_lvlentry_macro	  R72B_file, stardust_speedway_zone_act_2,    past,  bad_future
+	ipx_lvlentry_macro	  R72C_file, stardust_speedway_zone_act_2,  future, good_future
+	ipx_lvlentry_macro	  R72D_file, stardust_speedway_zone_act_2,  future,  bad_future
+	ipx_lvlentry_macro	  R73C_file, stardust_speedway_zone_act_3,  future, good_future
+	ipx_lvlentry_macro	  R73D_file, stardust_speedway_zone_act_3,  future,  bad_future
+	ipx_lvlentry_macro	  R81A_file,  metallic_madness_zone_act_1, present,  bad_future
+	ipx_lvlentry_macro	  R81B_file,  metallic_madness_zone_act_1,    past,  bad_future
+	ipx_lvlentry_macro	  R81C_file,  metallic_madness_zone_act_1,  future, good_future
+	ipx_lvlentry_macro	  R81D_file,  metallic_madness_zone_act_1,  future,  bad_future
+	ipx_lvlentry_macro	  R82A_file,  metallic_madness_zone_act_2, present,  bad_future
+	ipx_lvlentry_macro	  R82B_file,  metallic_madness_zone_act_2,    past,  bad_future
+	ipx_lvlentry_macro	  R82C_file,  metallic_madness_zone_act_2,  future, good_future
+	ipx_lvlentry_macro	  R82D_file,  metallic_madness_zone_act_2,  future,  bad_future
+	ipx_lvlentry_macro	  R83C_file,  metallic_madness_zone_act_3,  future, good_future
+	ipx_lvlentry_macro	  R83D_file,  metallic_madness_zone_act_3,  future,  bad_future
+	ipx_lvlentry_macro	special_stage_file,                     0,       0,           0
+	ipx_lvlentry_macro	  R11A_file,    palmtree_panic_zone_act_1, present,  bad_future
+	ipx_lvlentry_macro	  R11A_file,    palmtree_panic_zone_act_1, present,  bad_future
+	ipx_lvlentry_macro	  R11A_file,    palmtree_panic_zone_act_1, present,  bad_future
+	ipx_lvlentry_macro	  R11A_file,    palmtree_panic_zone_act_1, present,  bad_future
 ; -----------------------------------------------------------------------------
 ;IPX_loc_85E:
 IPX_StartDemo:
@@ -718,80 +720,78 @@ IPX_StartDemo:
 	move.b	(a6),d0
 	addq.b	#1,(a6)
 	cmp.b	(a6),d1
-	bcc.s	IPX_loc_874
+	bcc.s	.skip
 	move.b	#0,(a6)
-
-IPX_loc_874:
-	add.w	d0,d0
-	move.w	IPX_off_87E(pc,d0.w),d0
-	jmp	IPX_off_87E(pc,d0.w)
+.skip:	add.w	d0,d0
+	move.w	IPX_off_Demo(pc,d0.w),d0
+	jmp	IPX_off_Demo(pc,d0.w)
 ; -----------------------------------------------------------------------------
-
-IPX_off_87E:	offsetTable
-		offsetTableEntry.w IPX_loc_938
-		offsetTableEntry.w IPX_loc_88A
-		offsetTableEntry.w IPX_loc_920
-		offsetTableEntry.w IPX_loc_8BC
-		offsetTableEntry.w IPX_loc_92C
-		offsetTableEntry.w IPX_loc_8EE
+;IPX_off_87E:
+IPX_off_Demo:	offsetTable
+		offsetTableEntry.w IPX_IntroVideo
+		offsetTableEntry.w IPX_R1_Demo
+		offsetTableEntry.w IPX_SS1_Demo
+		offsetTableEntry.w IPX_R4_Demo
+		offsetTableEntry.w IPX_SS6_Demo
+		offsetTableEntry.w IPX_R8_Demo
 ; -----------------------------------------------------------------------------
-
-IPX_loc_88A:
+;IPX_loc_88A:
+IPX_R1_Demo:
 	move.b	#0,(IPX_unk_151C).l
 	move.w	#palmtree_panic_zone_act_1,(IPX_CurrentZoneAndAct).l
 	move.b	#present,(IPX_CurrentTimeZone).l
 	move.b	#bad_future,(IPX_GoodFuture_ActFlag).l
 
-	move.w	#$84,d0
+	move.w	#R1_demo_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
 	move.w	#0,(IPX_unk_1580).l
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_loc_8BC:
+;IPX_loc_8BC:
+IPX_R4_Demo:
 	move.b	#0,(IPX_unk_151C).l
 	move.w	#tidal_tempest_zone_act_3,(IPX_CurrentZoneAndAct).l
 	move.b	#future,(IPX_CurrentTimeZone).l
 	move.b	#good_future,(IPX_GoodFuture_ActFlag).l
 
-	move.w	#$24,d0
+	move.w	#R4_demo_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
 	move.w	#0,(IPX_unk_1580).l
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_loc_8EE:
+;IPX_loc_8EE:
+IPX_R8_Demo:
 	move.b	#0,(IPX_unk_151C).l
 	move.w	#metallic_madness_zone_act_2,(IPX_CurrentZoneAndAct).l
 	move.b	#present,(IPX_CurrentTimeZone).l
 	move.b	#bad_future,(IPX_GoodFuture_ActFlag).l
 
-	move.w	#$25,d0
+	move.w	#R8_demo_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
 	move.w	#0,(IPX_unk_1580).l
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_loc_920:
-	move.w	#$8A,d0
+;IPX_loc_920:
+IPX_SS1_Demo:
+	move.w	#unk_file_8A,d0
 	bsr.w	IPX_loc_CE0
 	bra.w	IPX_SS1_Start
 ; -----------------------------------------------------------------------------
-
-IPX_loc_92C:
-	move.w	#$8A,d0
+;IPX_loc_92C:
+IPX_SS6_Demo:
+	move.w	#unk_file_8A,d0
 	bsr.w	IPX_loc_CE0
 	bra.w	IPX_SS6_Start
 ; -----------------------------------------------------------------------------
-
-IPX_loc_938:
-	move.w	#$D7,d0
+;IPX_loc_938:
+IPX_IntroVideo:
+	move.w	#intro_video_file,d0
 	bsr.w	IPX_LoadAndRunFile
 	tst.b	(IPX_static_unk_0BE3).l
-	bmi.s	IPX_loc_938
+	bmi.s	IPX_IntroVideo
 	rts
 ; -----------------------------------------------------------------------------
 ;IPX_loc_94A:
@@ -940,7 +940,7 @@ IPX_TimeAttack:
 	bmi.s	IPX_loc_AD2
 
 	mulu.w	#6,d0
-	lea	IPX_byte_68A(pc),a6
+	lea	IPX_LevelSelect_List(pc),a6
 	move.w	2(a6,d0.w),(IPX_CurrentZoneAndAct).l
 	move.b	4(a6,d0.w),(IPX_CurrentTimeZone).l
 	move.b	5(a6,d0.w),(IPX_GoodFuture_ActFlag).l
