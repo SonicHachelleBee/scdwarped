@@ -796,69 +796,73 @@ IPX_IntroVideo:
 ; -----------------------------------------------------------------------------
 ;IPX_loc_94A:
 IPX_SoundTest:
-	moveq	#$26,d0
+	moveq	#sound_test_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
 	add.w	d0,d0
-	move.w	IPX_off_95A(pc,d0.w),d0
-	jmp	IPX_off_95A(pc,d0.w)
+	move.w	IPX_off_Secrets(pc,d0.w),d0
+	jmp	IPX_off_Secrets(pc,d0.w)
 ; -----------------------------------------------------------------------------
-
-IPX_off_95A:	offsetTable
-		offsetTableEntry.w IPX_loc_968
-		offsetTableEntry.w IPX_loc_96A
-		offsetTableEntry.w IPX_loc_9A2
-		offsetTableEntry.w IPX_loc_9AA
-		offsetTableEntry.w IPX_loc_9B2
-		offsetTableEntry.w IPX_loc_9BA
-		offsetTableEntry.w IPX_loc_9C2
+;IPX_off_95A:
+IPX_off_Secrets:	offsetTable
+			offsetTableEntry.w IPX_Secret_None
+			offsetTableEntry.w IPX_Secret_SpecialStage
+			offsetTableEntry.w IPX_Secret_1
+			offsetTableEntry.w IPX_Secret_3
+			offsetTableEntry.w IPX_Secret_4
+			offsetTableEntry.w IPX_Secret_5
+			offsetTableEntry.w IPX_Secret_6
 ; -----------------------------------------------------------------------------
-
-IPX_loc_968:
+;IPX_loc_968:
+IPX_Secret_None:
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_loc_96A:
+;IPX_loc_96A:
+IPX_Secret_SpecialStage:
 	move.b	#7,(IO_SpecialStageToLoad).l
 	move.b	#0,(IO_TimeStones_Array).l
 	bset	#0,(IO_SpecialStageLockouts).l
 	bset	#2,(IO_SpecialStageLockouts).l
 
-	moveq	#$75,d0
+	moveq	#special_stage_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
 	tst.b	(IPX_unk_0F25).l
-	bne.s	IPX_loc_9A0
+	bne.s	.ret
 
-	move.w	#$C9,d0
+	; Hidden credits displayed if you complete the Special Stage
+	move.w	#secret2_file,d0
 	bsr.w	IPX_LoadAndRunFile
-
-IPX_loc_9A0:
-	rts
+.ret:	rts
 ; -----------------------------------------------------------------------------
-
-IPX_loc_9A2:
-	move.w	#$C8,d0
+;IPX_loc_9A2:
+IPX_Secret_1:
+	; Infinite fun
+	move.w	#secret1_file,d0
 	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
-
-IPX_loc_9AA:
-	move.w	#$CA,d0
+;IPX_loc_9AA:
+IPX_Secret_3:
+	; DJ scene
+	move.w	#secret3_file,d0
 	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
-
-IPX_loc_9B2:
-	move.w	#$CB,d0
+;IPX_loc_9B2:
+IPX_Secret_4:
+	; See you next game
+	move.w	#secret4_file,d0
 	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
-
-IPX_loc_9BA:
-	move.w	#$CC,d0
+;IPX_loc_9BA:
+IPX_Secret_5:
+	; Tribute to Batman
+	move.w	#secret5_file,d0
 	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
-
-IPX_loc_9C2:
-	move.w	#$CD,d0
+;IPX_loc_9C2:
+IPX_Secret_6:
+	; Chibi Sonic
+	move.w	#secret6_file,d0
 	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
 ;IPX_loc_9CA:
