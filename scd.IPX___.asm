@@ -867,74 +867,74 @@ IPX_Secret_6:
 ; -----------------------------------------------------------------------------
 ;IPX_loc_9CA:
 IPX_VisualMode:
-	move.w	#$85,d0
+	move.w	#visual_mode_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
 	add.w	d0,d0
-	move.w	IPX_off_9DC(pc,d0.w),d0
-	jmp	IPX_off_9DC(pc,d0.w)
+	move.w	IPX_off_Video(pc,d0.w),d0
+	jmp	IPX_off_Video(pc,d0.w)
 ; -----------------------------------------------------------------------------
-
-IPX_off_9DC:	offsetTable
-		offsetTableEntry.w IPX_loc_9F8
-		offsetTableEntry.w IPX_loc_9E6
-		offsetTableEntry.w IPX_loc_A0C
-		offsetTableEntry.w IPX_loc_A2E
-		offsetTableEntry.w IPX_loc_9FA
+;IPX_off_9DC:
+IPX_off_Video:	offsetTable
+		offsetTableEntry.w IPX_Video_None
+		offsetTableEntry.w IPX_Video_Intro
+		offsetTableEntry.w IPX_Video_GoodEnding
+		offsetTableEntry.w IPX_Video_BadEnding
+		offsetTableEntry.w IPX_Video_PencilTest
 ; -----------------------------------------------------------------------------
-
-IPX_loc_9E6:
-	move.w	#$D7,d0
+;IPX_loc_9E6:
+IPX_Video_Intro:
+	move.w	#intro_video_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
 	tst.b	(IPX_static_unk_0BE3).l
-	bmi.s	IPX_loc_9E6
+	bmi.s	IPX_Video_Intro
 	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
-
-IPX_loc_9F8:
+;IPX_loc_9F8:
+IPX_Video_None:
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_loc_9FA:
-	move.w	#$D4,d0
+;IPX_loc_9FA:
+IPX_Video_PencilTest:
+	move.w	#pencil_test_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
 	tst.b	(IPX_static_unk_0BE3).l
-	bmi.s	IPX_loc_9FA
+	bmi.s	IPX_Video_PencilTest
 	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
-
-IPX_loc_A0C:
+;IPX_loc_A0C:
+IPX_Video_GoodEnding:
 	move.b	#$7F,(IPX_unk_0F24).l
-	move.w	#$94,d0
+	move.w	#good_ending_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
 	tst.b	(IPX_static_unk_0BE3).l
-	bmi.s	IPX_loc_A0C
+	bmi.s	IPX_Video_GoodEnding
 
-	move.w	#$8D,d0
+	move.w	#player_name_file,d0
 	bsr.w	IPX_LoadAndRunFile
 	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
-
-IPX_loc_A2E:
+;IPX_loc_A2E:
+IPX_Video_BadEnding:
 	move.b	#0,(IPX_unk_0F24).l
-	move.w	#$93,d0
+	move.w	#bad_ending_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
 	tst.b	(IPX_static_unk_0BE3).l
-	bmi.s	IPX_loc_A2E
+	bmi.s	IPX_Video_BadEnding
 	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
 ;IPX_loc_A48:
 IPX_DAGarden:
-	move.w	#$81,d0
+	move.w	#d_a_garden_file,d0
 	bra.w	IPX_LoadAndRunFile
 ; -----------------------------------------------------------------------------
 ;IPX_loc_A50:
 IPX_TimeAttack:
-	moveq	#$D,d0
+	moveq	#time_attack_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
 	move.w	d0,(IPX_unk_0F14).l
