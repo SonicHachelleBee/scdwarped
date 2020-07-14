@@ -938,10 +938,10 @@ IPX_TimeAttack:
 	bsr.w	IPX_LoadAndRunFile
 
 	move.w	d0,(IPX_unk_0F14).l
-	beq.w	IPX_loc_AB2
+	beq.w	IPX_TimeAttack_Return
 
-	move.b	IPX_byte_AB4(pc,d0.w),d0
-	bmi.s	IPX_loc_AD2
+	move.b	IPX_TimeAttack_List(pc,d0.w),d0
+	bmi.s	IPX_TimeAttack_SpecialStage
 
 	mulu.w	#6,d0
 	lea	IPX_LevelSelect_List(pc),a6
@@ -958,19 +958,26 @@ IPX_TimeAttack:
 	move.l	(IPX_unk_1514).l,(IPX_unk_0F10).l
 	bra.s	IPX_TimeAttack
 ; -----------------------------------------------------------------------------
-
-IPX_loc_AB2:
+;IPX_loc_AB2:
+IPX_TimeAttack_Return:
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_byte_AB4:
-	dc.b	  0,   0,   4, $16,  $B,  $F, $14, $17
-	dc.b	$1B, $20, $21, $25, $2A, $2B, $2F, $34
-	dc.b	$35, $39, $3E, $3F, $43, $48, $FF, $FE
-	dc.b	$FD, $FC, $FB, $FA, $F9, $00
+; Array of ID's relative to IPX_LevelSelect_List entries (except Special Stages)
+;IPX_byte_AB4:
+IPX_TimeAttack_List:
+	dc.b	  0
+	dc.b	  0,   4, $16 ; R1
+	dc.b	 $B,  $F, $14 ; R3
+	dc.b	$17, $1B, $20 ; R4
+	dc.b	$21, $25, $2A ; R5
+	dc.b	$2B, $2F, $34 ; R6
+	dc.b	$35, $39, $3E ; R7
+	dc.b	$3F, $43, $48 ; R8
+	dc.b	$FF, $FE, $FD, $FC, $FB, $FA, $F9 ; Special Stages
+	dc.b	  0
 ; -----------------------------------------------------------------------------
-
-IPX_loc_AD2:
+;IPX_loc_AD2:
+IPX_TimeAttack_SpecialStage:
 	neg.b	d0
 	ext.w	d0
 	subq.w	#1,d0
@@ -978,7 +985,7 @@ IPX_loc_AD2:
 	move.b	#0,(IO_TimeStones_Array).l
 	bset	#1,(IO_SpecialStageLockouts).l
 
-	moveq	#$75,d0
+	moveq	#special_stage_file,d0
 	bsr.w	IPX_LoadAndRunFile
 	bra.w	IPX_TimeAttack
 ; -----------------------------------------------------------------------------
