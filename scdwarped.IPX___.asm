@@ -785,12 +785,12 @@ IPX_LevelSelect:
 	rts
 ;-----------------------------------------------------------------------------
 ; Macro defining a level select entry
-ipx_lvlentry_macro	macro	file,zone_and_act,time_zone,good_future_flag
+ipx_lvlentry_macro macro file,act,timezone,goodfuture
 	dc.w	file
-	dc.w	zone_and_act
-	dc.b	time_zone
-	dc.b	good_future_flag
-	endm
+	dc.w	act
+	dc.b	timezone
+	dc.b	goodfuture
+    endm
 
 ;IPX_byte_68A:
 IPX_LevelSelect_List:
@@ -1359,11 +1359,14 @@ IPX_RunSpecialStage_Secret:
 
 IPX_RAM_0DA6:	dc.w	0 ; IPX_static_unk_0DA6
 ; -----------------------------------------------------------------------------
-
+; Save data into BRAM.
 ; IPX_loc_C76:
 IPX_SaveData:
+	; Reset IPX_GoodFuture_ActFlag and IPX_EggMachine_ZoneFlags here.
+	; This function is called each time a new zone is started.
 	move.b	#bad_future,(IPX_GoodFuture_ActFlag).l
 	move.b	#0,(IPX_EggMachine_ZoneFlags).l
+
 	bsr.s	IPX_loc_C58 
 
 	move.w	(IPX_CurrentZoneInSave).l,(BRAM_CurrentZone).l
@@ -1412,7 +1415,7 @@ IPX_loc_D10:
 ; -----------------------------------------------------------------------------
 
 IPX_loc_D30:
-	move.w	sr,(IPX_unk_0DA6).l
+	move.w	sr,(IPX_static_unk_0DA6).l
 	move.w	#$2700,sr
 	move.w	#$0100,(Z80_Bus_Request).l
 
@@ -1424,7 +1427,7 @@ IPX_loc_D42:
 
 IPX_loc_D4E:
 	move.w	#0,(Z80_Bus_Request).l
-	move.w	(IPX_unk_0DA6).l,sr
+	move.w	(IPX_static_unk_0DA6).l,sr
 	rts
 ; -----------------------------------------------------------------------------
 
@@ -1437,62 +1440,70 @@ IPX_loc_D6A:
 	bne.s	IPX_loc_D6A
 	rts
 ; -----------------------------------------------------------------------------
-
+; Pick a random time zone after warping.
 IPX_RandomTimeZone_PickAfterWarp:
+	; Pick the frames counter value used before warping.
 	move.w	(IPX_FramesCounter_Level).l,d1
 	lsr.w	#4,d1
 	andi.w	#3,d1
 
+	; Depending on the time zone we were in before warping, we do not
+	; perform the same actions.
 	cmpi.b	#1,(IPX_PreviousTimeZone).l
-	blt.s	IPX_RandomTimeZone_Warp_FromPast
+	blt.s	IPX_RandomTimeZone_WarpingFromPast
 	bgt.w	IPX_RandomTimeZone_WarpingFromFuture
 
-;IPX_RandomTimeZone_Warp_FromPresent:
+	; We are warping from the present time zone.
+	; We can either go to the past or the future.
 	btst	#1,(IPX_CurrentTimeZone).l
-	beq.s	IPX_RandomTimeZone_Warp_FromPresent_ToPast
+	beq.s	IPX_RandomTimeZone_WarpingFromPresentToPast
 
+	; We are warping from present to the future.
+	; Randomize d1 only on 2 and 3 values (for good and bad future).
 	bset	#1,d1
 
-IPX_RandomTimeZone_Warp_ToFuture:
+IPX_RandomTimeZone_WarpingToFuture:
 	move.b	(a0,d1.w),d0
 	bra.w	IPX_RandomTimeZone_Future
 ; -----------------------------------------------------------------------------
 
-IPX_RandomTimeZone_Warp_FromPresent_ToPast:
+IPX_RandomTimeZone_WarpingFromPresentToPast:
+	; We are warping from present to the past.
+	; Nothing is random here, there is only the past time zone to go to.
 	move.b	1(a0),d0
 	rts
 ; -----------------------------------------------------------------------------
 
-IPX_RandomTimeZone_Warp_FromPast:
+IPX_RandomTimeZone_WarpingFromPast:
+	; We are warping from the past time zone.
+	; Check if the Eggman machine was destroyed before warping.
 	bsr.w	IPX_TestMachineFlag_OnWarpFromPast
-	btst	#1,d1
-	bne.s	IPX_RandomTimeZone_Warp_ToFuture
 
-;IPX_RandomTimeZone_Warp_ToPresent:
+	; Are we warping to the future?
+	; Note that because there are 4 values possible in d1, the present
+	; time zone has 2x more chance to be selected randomly.
+	btst	#1,d1 ; Can be 0, 1, 2 or 3
+	bne.s	IPX_RandomTimeZone_WarpingToFuture ; If 2 or 3, warp to the future.
+
+	; We are warping from the past to the present.
 	move.b	0(a0),d0
 	rts
 ; -----------------------------------------------------------------------------
-
-	dephase
-	if * > $16F634A
-		fatal "IPX___.MMD RAM variables in $0EFA-$0EFF are erased! $\{*} > $16F634A"
-	else
-		message "IPX___.MMD RAM variables in $0EFA-$0EFF: $\{*} <= $16F634A"
+; RAM variables in between executed code for the Sonic CD Warped hack.
+	if * > $13FE7FA
+		fatal "IPX___.MMD RAM variables at $0EFA-$0EFF are erased! $\{*} > $13FE7FA"
 	endif
-	org	$16F634A
-	phase	$16F634A-$130
+	org	$13FE7FA
 
-IPX_RAM_0EFA:	dc.w	0
-IPX_RAM_0EFC:	dc.b	0
+IPX_RAM_0EFA:	dc.w	0 ; IPX_EggMachine_ActFlag
+IPX_RAM_0EFC:	dc.b	0 ; IPX_EggMachine_ZoneFlags
 		dc.b	0 ; Free byte
-IPX_RAM_0EFE:	dc.b	0
-IPX_RAM_0EFF:	dc.b	0
-
-	dephase
+IPX_RAM_0EFE:	dc.b	0 ; IPX_PreviousTimeZone
+IPX_RAM_0EFF:	dc.b	0 ; IPX_PreviousGameMode
 
 ; ===========================================================================
 ; end of IPX___.MMD file
 IPX_End:
-	if * > $16F6350 ; Maximum code size allowed for this file
-		fatal "IPX___.MMD maximum code size reached! $\{*} > $16F6350"
+	if IPX_End-IPX_Start > $F00 ; Maximum code size allowed for this file.
+		fatal "IPX___.MMD maximum code size reached! (> $F00)"
 	endif

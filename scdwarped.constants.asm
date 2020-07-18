@@ -2,28 +2,6 @@
 ; Equates section - Names for variables.
 
 ; ---------------------------------------------------------------------------
-; Controller Buttons
-;
-; Buttons bit numbers
-button_up:			EQU	0
-button_down:			EQU	1
-button_left:			EQU	2
-button_right:			EQU	3
-button_B:			EQU	4
-button_C:			EQU	5
-button_A:			EQU	6
-button_start:			EQU	7
-; Buttons masks (1 << x == pow(2, x))
-button_up_mask:			EQU	1<<button_up	; $01
-button_down_mask:		EQU	1<<button_down	; $02
-button_left_mask:		EQU	1<<button_left	; $04
-button_right_mask:		EQU	1<<button_right	; $08
-button_B_mask:			EQU	1<<button_B	; $10
-button_C_mask:			EQU	1<<button_C	; $20
-button_A_mask:			EQU	1<<button_A	; $40
-button_start_mask:		EQU	1<<button_start	; $80
-
-; ---------------------------------------------------------------------------
 ; Constants that can be used instead of hard-coded IDs for various things.
 ; The "id" function allows to remove elements from an array/table without having
 ; to change the IDs everywhere in the code.

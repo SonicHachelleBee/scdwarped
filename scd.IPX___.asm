@@ -624,12 +624,12 @@ IPX_LevelSelect:
 	rts
 ; -----------------------------------------------------------------------------
 ; Macro defining a level select entry
-ipx_lvlentry_macro	macro	file,zone_and_act,time_zone,good_future_flag
+ipx_lvlentry_macro macro file,act,timezone,goodfuture
 	dc.w	file
-	dc.w	zone_and_act
-	dc.b	time_zone
-	dc.b	good_future_flag
-	endm
+	dc.w	act
+	dc.b	timezone
+	dc.b	goodfuture
+    endm
 
 ;IPX_byte_68A:
 IPX_LevelSelect_List:
@@ -1129,6 +1129,7 @@ IPX_loc_C6E:
 	bsr.w	IPX_loc_CE0
 	bra.w	IPX_loc_D10
 ; -----------------------------------------------------------------------------
+; Save data into BRAM.
 ;IPX_loc_C76:
 IPX_SaveData:
 	bsr.s	IPX_loc_C58
@@ -1142,10 +1143,10 @@ IPX_SaveData:
 	move.b	(IPX_TimeStones_Array).l,(BRAM_TimeStones_Array).l
 	bsr.w	IPX_loc_D1C
 
-	move.w	#$8C,d0
+	move.w	#unk_file_8C,d0
 	btst	#0,(IPX_unk_0F1F).l
 	bne.s	IPX_loc_CD4
-	move.w	#$88,d0
+	move.w	#unk_file_88,d0
 
 IPX_loc_CD4:
 	bsr.w	IPX_loc_CE0
@@ -1186,19 +1187,19 @@ IPX_loc_D1C:
 ; -----------------------------------------------------------------------------
 
 IPX_loc_D30:
-	move.w	sr,(IPX_unk_0DA6).l
+	move.w	sr,(IPX_static_unk_0DA6).l
 	move.w	#$2700,sr
-	move.w	#$0100,(IO_unk_A11100).l
+	move.w	#$0100,(Z80_Bus_Request).l
 
 IPX_loc_D42:
-	btst	#0,(IO_unk_A11100).l
+	btst	#0,(Z80_Bus_Request).l
 	bne.s	IPX_loc_D42
 	rts
 ; -----------------------------------------------------------------------------
 
 IPX_loc_D4E:
-	move.w	#0,(IO_unk_A11100).l
-	move.w	(IPX_unk_0DA6).l,sr
+	move.w	#0,(Z80_Bus_Request).l
+	move.w	(IPX_static_unk_0DA6).l,sr
 	rts
 ; -----------------------------------------------------------------------------
 
@@ -1211,7 +1212,7 @@ IPX_loc_D6A:
 	bne.s	IPX_loc_D6A
 	rts
 ; -----------------------------------------------------------------------------
-; Dead code?
+; Dead code
 ;IPX_loc_D76:
 	move.w	d0,(IO_unk_A12010).l
 
@@ -1240,13 +1241,13 @@ IPX_loc_D94:
 
 IPX_RAM_0DA6:	dc.w	0 ; IPX_static_unk_0DA6
 ; -----------------------------------------------------------------------------
-; Dead code?
+; Dead code
 ;IPX_loc_DA8:
 	jmp	(0).w
 
 ; ===========================================================================
 ; end of IPX___.MMD file
 IPX_End:
-	if IPX_End-IPX_Start > $F00	; Maximum code size allowed for this file.
+	if IPX_End-IPX_Start > $F00 ; Maximum code size allowed for this file.
 		fatal "IPX___.MMD maximum code size reached! (> $F00)"
 	endif
