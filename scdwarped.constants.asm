@@ -210,12 +210,12 @@ FramesCounter =			$FFFFFA44 ; Used in title screen, special stages, but NOT in l
 IPX_RAM_Start =			$00FF0000 ; Location where the executed code starts in the RAM.
 
 ; RAM variables in between executed code. Looks like some static variables...
-; They shall stay at their exact address because they are referenced by other MMD files which
+; They shall stay at their exact address because they are referenced by other files which
 ; are not disassembled yet!
 IPX_static_GoodFuture_Array =	$00FF03CA
 IPX_static_TimeStones_Array =	$00FF03CB
 IPX_static_unk_0BE2 =		$00FF0BE2
-IPX_static_unk_0BE3 =		$00FF0BE3
+IPX_static_LoopVideoFlag =	$00FF0BE3
 IPX_static_unk_0DA6 =		$00FF0DA6
 
 ; RAM variables only for Sonic CD Warped
@@ -266,29 +266,29 @@ IPX_GoodFuture_ZoneFlags =	$00FF1590 ; Array of good future flags for the curren
 IPX_FramesCounter_Level =	$00FF190C ; Used only in levels
 
 ; Variables in RAM can only be declared up to this point.
-; This is where some other executed code from another loaded MMD file starts.
+; This is where some other executed code from another loaded file starts.
 IPX_unk_2000 =			$00FF2000
 
 ; ---------------------------------------------------------------------------
-; Loaded MMD file area
+; Loaded file area
 
 MMD_unk_200000 =		$00200000
-MMD_unk_200002 =		$00200002
-MMD_unk_200006 =		$00200006
-MMD_unk_200008 =		$00200008
-MMD_unk_20000C =		$0020000C
-MMD_unk_200010 =		$00200010
-MMD_unk_200100 =		$00200100
+MMD_CodeLoadAddr =		$00200002
+MMD_CodeSize =			$00200006
+MMD_CodeStartAddr =		$00200008
+MMD_CodeHIntAddr =		$0020000C
+MMD_CodeVIntAddr =		$00200010
+MMD_CodeLocationInFile =	$00200100
 
 ; ---------------------------------------------------------------------------
 ; BRAM area
 
-BRAM_unk_2002A4 =		$002002A4
+BRAM_CurrentZone =		$002002A4
 BRAM_unk_2002A5 =		$002002A5
 BRAM_unk_2002A6 =		$002002A6
 BRAM_GoodFuture_Array =		$002002A7
 BRAM_unk_2002A8 =		$002002A8
-BRAM_unk_2002AC =		$002002AC
+BRAM_NextSpecialStage =		$002002AC
 BRAM_TimeStones_Array =		$002002AD
 
 ; ---------------------------------------------------------------------------

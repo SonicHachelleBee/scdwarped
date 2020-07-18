@@ -14,7 +14,7 @@ IPX_Header:
 ; -----------------------------------------------------------------------------
 
 IPX_Start:
-	move.l	#IPX_int_BE4-IPX_Start+IPX_RAM_Start,(V_Int_addr).w
+	move.l	#IPX_V_Int-IPX_Start+IPX_RAM_Start,(V_Int_addr).w
 	bsr.w	IPX_loc_D1C
 
 	; Erases $1100 bytes starting at $0F00.
@@ -241,7 +241,7 @@ IPX_BadEnding:
 	move.b	#0,(IPX_unk_0F24).l
 	move.w	#bad_ending_file,d0
 	bsr.w	IPX_LoadAndRunFile
-	tst.b	(IPX_static_unk_0BE3).l
+	tst.b	(IPX_static_LoopVideoFlag).l
 	bmi.s	IPX_BadEnding
 	rts
 ; -----------------------------------------------------------------------------
@@ -250,7 +250,7 @@ IPX_GoodEnding:
 	move.b	#$7F,(IPX_unk_0F24).l
 	move.w	#good_ending_file,d0
 	bsr.w	IPX_LoadAndRunFile
-	tst.b	(IPX_static_unk_0BE3).l
+	tst.b	(IPX_static_LoopVideoFlag).l
 	bmi.s	IPX_GoodEnding
 	rts
 ; -----------------------------------------------------------------------------
@@ -287,7 +287,7 @@ IPX_RandomTimeZone_BadFuture:
 	; When all time stones are collected, the bad future badniks acts as if we are in
 	; a good future (flowers spawning everywhere). Also, the music playing is the good future one.
 	; To avoid that, a workaround is to set the last unused bit of the byte array, so that
-	; its value is not $7F anymore (but $FF). This way, tests are invalidated in the level MMD file.
+	; its value is not $7F anymore (but $FF). This way, tests are invalidated in the level file.
 	; Then, the badniks displayed and the music are the bad future ones.
 	bset	#7,(IPX_TimeStones_Array).l
 
@@ -358,7 +358,7 @@ IPX_RandomTimeZone_BeginLevel_Act_3:
 	bra.w	IPX_RandomTimeZone_Future
 ; -----------------------------------------------------------------------------
 ; RAM variables in between executed code. Looks like some static variables...
-; They shall stay at their exact address because they are referenced by other MMD files which
+; They shall stay at their exact address because they are referenced by other files which
 ; are not disassembled yet!
 	if * > $13FDCCA
 		fatal "IPX___.MMD RAM variables at $03CA-$03CB are erased! $\{*} > $13FDCCA"
@@ -951,7 +951,7 @@ IPX_SS6_Demo:
 IPX_IntroVideo:
 	move.w	#intro_video_file,d0
 	bsr.w	IPX_LoadAndRunFile
-	tst.b	(IPX_static_unk_0BE3).l
+	tst.b	(IPX_static_LoopVideoFlag).l
 	bmi.s	IPX_IntroVideo
 	rts
 ; -----------------------------------------------------------------------------
@@ -1048,7 +1048,7 @@ IPX_Video_Intro:
 	move.w	#intro_video_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_static_unk_0BE3).l
+	tst.b	(IPX_static_LoopVideoFlag).l
 	bmi.s	IPX_Video_Intro
 	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
@@ -1061,7 +1061,7 @@ IPX_Video_PencilTest:
 	move.w	#pencil_test_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_static_unk_0BE3).l
+	tst.b	(IPX_static_LoopVideoFlag).l
 	bmi.s	IPX_Video_PencilTest
 	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
@@ -1071,7 +1071,7 @@ IPX_Video_GoodEnding:
 	move.w	#good_ending_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_static_unk_0BE3).l
+	tst.b	(IPX_static_LoopVideoFlag).l
 	bmi.s	IPX_Video_GoodEnding
 
 	move.w	#player_name_file,d0
@@ -1084,7 +1084,7 @@ IPX_Video_BadEnding:
 	move.w	#bad_ending_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_static_unk_0BE3).l
+	tst.b	(IPX_static_LoopVideoFlag).l
 	bmi.s	IPX_Video_BadEnding
 	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
@@ -1150,14 +1150,16 @@ IPX_TimeAttack_SpecialStage:
 	bsr.w	IPX_LoadAndRunFile
 	bra.w	IPX_TimeAttack
 ; -----------------------------------------------------------------------------
+; Executed only when we are warping from the past to another time zone.
+; We are going to set the Eggman machine flag following the good future flag (automatically
+; set when destroying the Eggman machine object).
+IPX_TestMachineFlag_OnWarpFromPast:
+	move.b	(IPX_GoodFuture_ActFlag).l,d0
 
-IPX_loc_D1C:
-	bset	#1,(IO_unk_A12003).l
-	btst	#1,(IO_unk_A12003).l
-	beq.s	IPX_loc_D1C
-	rts
-; -----------------------------------------------------------------------------
-
+; This function sets the Eggman machine flag following d0 value.
+; d0 actually contains the good future flag, but it can be retrieved in different ways:
+; - From the IPX_GoodFuture_ActFlag when warping from the past.
+; - From the IPX_GoodFuture_ZoneFlags at the end of the level in the past time zone.
 IPX_TestMachineFlag:
 	btst	#0,d0
 	beq.s	.skip
@@ -1165,25 +1167,27 @@ IPX_TestMachineFlag:
 	move.b	#1,(IPX_EggMachine_ActFlag).l
 .skip:	rts
 ; -----------------------------------------------------------------------------
-
-IPX_TestMachineFlag_Warp:
-	move.b	(IPX_GoodFuture_ActFlag).l,d0
-	bra.w	IPX_TestMachineFlag
+; This function was moved here to gain some ROM free space at the end of the file.
+IPX_loc_D1C:
+	bset	#1,(IO_unk_A12003).l
+	btst	#1,(IO_unk_A12003).l
+	beq.s	IPX_loc_D1C
+	rts
 ; -----------------------------------------------------------------------------
-; RAM variables inside executed code
-	dephase
-	if * > $16F6032
-		fatal "IPX___.MMD RAM variables in $0BE2-$0BE3 are erased! $\{*} > $16F6032"
-	else
-		message "IPX___.MMD RAM variables in $0BE2-$0BE3: $\{*} <= $16F6032"
+; RAM variables in between executed code. Looks like some static variables...
+; They shall stay at their exact address because they are referenced by other files which
+; are not disassembled yet!
+	if * > $13FE4E2
+		fatal "IPX___.MMD RAM variables at $0BE2-$0BE3 are erased! $\{*} > $13FE4E2"
 	endif
-	org	$16F6032
-	phase	$16F6032-$130
+	org	$13FE4E2
 
-IPX_RAM_0BE2:	dc.b	0
-IPX_RAM_0BE3:	dc.b	0
+IPX_RAM_0BE2:	dc.b	0 ; IPX_static_unk_0BE2
+IPX_RAM_0BE3:	dc.b	0 ; IPX_static_LoopVideoFlag
 ; -----------------------------------------------------------------------------
-
+; Load a file from the CD-ROM.
+; Load the code into 68K RAM (at $FFFF2000), and run it.
+;IPX_loc_AF8:
 IPX_LoadAndRunFile:
 	move.l	a0,-(sp)
 	move.w	d0,(IO_unk_A12010).l
@@ -1200,28 +1204,29 @@ IPX_LoadAndRunFile:
 	dbf	d7,.loop1
 	bsr.w	IPX_loc_D10
 
-	move.l	(MMD_unk_200008).l,d0
-	beq.w	IPX_loc_BDE
+	move.l	(MMD_CodeStartAddr).l,d0
+	beq.w	IPX_loc_BDE ; Jump if no code is associated to the file
 	movea.l	d0,a0
 
-	move.l	(MMD_unk_200002).l,d0
-	beq.s	IPX_loc_B44
+	move.l	(MMD_CodeLoadAddr).l,d0
+	beq.s	IPX_loc_B44 ; Jump if code doesn't need any load into memory
 	movea.l	d0,a2
 
-	lea	(MMD_unk_200100).l,a1
-	move.w	(MMD_unk_200006).l,d7
+	; Load the code at the specified address in memory.
+	lea	(MMD_CodeLocationInFile).l,a1
+	move.w	(MMD_CodeSize).l,d7
 .loop2	move.l	(a1)+,(a2)+
 	dbf	d7,.loop2
 
 IPX_loc_B44:
 	move.w	sr,-(sp)
-	move.l	(MMD_unk_20000C).l,d0
-	beq.s	IPX_loc_B52
+	move.l	(MMD_CodeHIntAddr).l,d0
+	beq.s	IPX_loc_B52 ; Jump if there is no H-Int function.
 	move.l	d0,(H_Int_addr).w
 
 IPX_loc_B52:
-	move.l	(MMD_unk_200010).l,d0
-	beq.s	IPX_loc_B5E
+	move.l	(MMD_CodeVIntAddr).l,d0
+	beq.s	IPX_loc_B5E ; Jump if there is no V-Int function.
 	move.l	d0,(V_Int_addr).w
 
 IPX_loc_B5E:
@@ -1246,19 +1251,20 @@ IPX_loc_B86:
 	move.w	(IO_unk_A12020).l,d0
 	bne.s	IPX_loc_B86
 
+	; Dynamic call to the loaded code
 	jsr	(a0)
 
-	move.b	d0,(IPX_static_unk_0BE3).l
+	move.b	d0,(IPX_static_LoopVideoFlag).l
 	bsr.w	IPX_loc_D30
 
 	move.b	#$E0,(IO_unk_A01C0A).l
 	bsr.w	IPX_loc_D4E
 
 	move.b	#0,(IPX_unk_0F00).l
-	move.l	#IPX_int_C06-IPX_Start+IPX_RAM_Start,(H_Int_addr).w
-	move.l	#IPX_int_BE4-IPX_Start+IPX_RAM_Start,(V_Int_addr).w
+	move.l	#IPX_H_Int-IPX_Start+IPX_RAM_Start,(H_Int_addr).w
+	move.l	#IPX_V_Int-IPX_Start+IPX_RAM_Start,(V_Int_addr).w
 	move.w	#$8134,(IPX_unk_0F16).l
-	bset	#0,(IPX_unk_0BE2).l
+	bset	#0,(IPX_static_unk_0BE2).l
 	bsr.w	IPX_loc_D5E
 	bsr.w	IPX_loc_D1C
 
@@ -1266,28 +1272,31 @@ IPX_loc_BDE:
 	movea.l	(sp)+,a0
 	rts
 ; -----------------------------------------------------------------------------
-
-IPX_int_BE4:
+; Vertical interrupt function.
+;IPX_int_BE4:
+IPX_V_Int:
 	bset	#0,(IO_unk_A12000).l
 	bclr	#0,(IPX_unk_0F00).l
-	bclr	#0,(IPX_unk_0BE2).l
-	beq.s	IPX_int_C06
+	bclr	#0,(IPX_static_unk_0BE2).l
+	beq.s	IPX_H_Int
 	move.w	#$8134,(VDP_control_port).l
 
-IPX_int_C06:
+; Horizontal interrupt function (do nothing).
+;IPX_int_C07:
+IPX_H_Int:
 	rte
 ; -----------------------------------------------------------------------------
-
+; Load saved data from BRAM.
 ; IPX_loc_C08:
 IPX_LoadSavedData:
 	bsr.w	IPX_loc_C58
 
-	move.w	(BRAM_unk_2002A4).l,(IPX_CurrentZoneInSave).l
+	move.w	(BRAM_CurrentZone).l,(IPX_CurrentZoneInSave).l
 	move.b	(BRAM_GoodFuture_Array).l,(IPX_GoodFuture_Array).l
 	move.b	(BRAM_unk_2002A8).l,(IPX_unk_0F1D).l
 	move.b	(BRAM_unk_2002A5).l,(IPX_unk_0F18).l
 	move.b	(BRAM_unk_2002A6).l,(IPX_unk_0F19).l
-	move.b	(BRAM_unk_2002AC).l,(IPX_NextSpecialStage).l
+	move.b	(BRAM_NextSpecialStage).l,(IPX_NextSpecialStage).l
 	move.b	(BRAM_TimeStones_Array).l,(IPX_TimeStones_Array).l
 	bsr.w	IPX_loc_D1C
 	rts
@@ -1305,37 +1314,50 @@ IPX_loc_C6E:
 	bsr.w	IPX_loc_CE0
 	bra.w	IPX_loc_D10
 ; -----------------------------------------------------------------------------
-
-IPX_RandomTimeZone_Warp_FromFuture:
+; Function that handles warping from the future (good or bad future) to another time zone.
+IPX_RandomTimeZone_WarpingFromFuture:
+	; Pick-up a random time zone based on the frames counter value in d1.
 	bclr	#1,d1
 	move.b	(a0,d1.w),d0
-	bchg	#0,d1
-	move.b	d1,(IPX_CurrentTimeZone).l
+	bchg	#0,d1 ; Can be 0 or 1
+	move.b	d1,(IPX_CurrentTimeZone).l ; Load the corresponding time zone.
 
+	; In case we were in the bad future.
+	; Remove the workaround on the time stones array by clearing the last unused bit of the byte
+	; array. This workaround is used in the bad future time zone to display bad future badniks and
+	; play the bad future music even if all the time stones are already collected.
 	bclr	#7,(IPX_TimeStones_Array).l
+
+	; In case we were in the good future.
+	; Reset the good future flag.
 	move.b	#bad_future,(IPX_GoodFuture_ActFlag).l
+
+	; Test if the Eggman machine was destroyed.
+	; If this is the case, set the good future flag back again.
 	btst	#0,(IPX_EggMachine_ZoneFlags).l
 	bne.w	IPX_RandomTimeZone_GoodFuture
 	rts
 ; -----------------------------------------------------------------------------
-
+; Run the 8th secret special stage as an easter egg when all time stones has been collected,
+; and we entered the big ring at the end of the act in the bad future time zone.
 IPX_RunSpecialStage_Secret:
-	bsr.w	IPX_loc_96A
+	; Run as if we were in the sound test and entered the code.
+	bsr.w	IPX_Secret_SpecialStage
+
+	; Reset some flags so that the game continues to run fine afterwards.
 	move.b	#1,(IPX_unk_0F22).l
 	move.b	#0,(IPX_SpecialStageFlag).l
 	rts
 ; -----------------------------------------------------------------------------
-; RAM variable inside executed code
-	dephase
-	if * > $16F61F6
-		fatal "IPX___.MMD RAM variable in $0DA6 is erased! $\{*} > $16F61F6"
-	else
-		message "IPX___.MMD RAM variable in $0DA6: $\{*} <= $16F61F6"
+; RAM variable in between executed code. Looks like some static variable...
+; It shall stay at its exact address because it is referenced by other files which
+; are not disassembled yet!
+	if * > $13FE6A6
+		fatal "IPX___.MMD RAM variable at $0DA6 is erased! $\{*} > $13FE6A6"
 	endif
-	org	$16F61F6
-	phase	$16F61F6-$130
+	org	$13FE6A6
 
-IPX_RAM_0DA6:	dc.w	0
+IPX_RAM_0DA6:	dc.w	0 ; IPX_static_unk_0DA6
 ; -----------------------------------------------------------------------------
 
 ; IPX_loc_C76:
@@ -1344,12 +1366,12 @@ IPX_SaveData:
 	move.b	#0,(IPX_EggMachine_ZoneFlags).l
 	bsr.s	IPX_loc_C58 
 
-	move.w	(IPX_CurrentZoneInSave).l,(BRAM_unk_2002A4).l
+	move.w	(IPX_CurrentZoneInSave).l,(BRAM_CurrentZone).l
 	move.b	(IPX_GoodFuture_Array).l,(BRAM_GoodFuture_Array).l
 	move.b	(IPX_unk_0F1D).l,(BRAM_unk_2002A8).l
 	move.b	(IPX_unk_0F18).l,(BRAM_unk_2002A5).l
 	move.b	(IPX_unk_0F19).l,(BRAM_unk_2002A6).l
-	move.b	(IPX_NextSpecialStage).l,(BRAM_unk_2002AC).l
+	move.b	(IPX_NextSpecialStage).l,(BRAM_NextSpecialStage).l
 	move.b	(IPX_TimeStones_Array).l,(BRAM_TimeStones_Array).l 
 	bsr.w	IPX_loc_D1C
 
@@ -1423,7 +1445,7 @@ IPX_RandomTimeZone_PickAfterWarp:
 
 	cmpi.b	#1,(IPX_PreviousTimeZone).l
 	blt.s	IPX_RandomTimeZone_Warp_FromPast
-	bgt.w	IPX_RandomTimeZone_Warp_FromFuture
+	bgt.w	IPX_RandomTimeZone_WarpingFromFuture
 
 ;IPX_RandomTimeZone_Warp_FromPresent:
 	btst	#1,(IPX_CurrentTimeZone).l
@@ -1442,7 +1464,7 @@ IPX_RandomTimeZone_Warp_FromPresent_ToPast:
 ; -----------------------------------------------------------------------------
 
 IPX_RandomTimeZone_Warp_FromPast:
-	bsr.w	IPX_TestMachineFlag_Warp
+	bsr.w	IPX_TestMachineFlag_OnWarpFromPast
 	btst	#1,d1
 	bne.s	IPX_RandomTimeZone_Warp_ToFuture
 

@@ -14,11 +14,11 @@ IPX_Header:
 ; -----------------------------------------------------------------------------
 
 IPX_Start:
-	move.l	#IPX_int_BE4-IPX_Start+IPX_RAM_Start,(V_Int_addr).w
+	move.l	#IPX_V_Int-IPX_Start+IPX_RAM_Start,(V_Int_addr).w
 	bsr.w	IPX_loc_D1C
 
-	; Erases $1100 bytes starting at $0F00.
-	; $0F00 -> $2000
+	; Erases $1100 bytes starting at $FFFF0F00.
+	; $FFFF0F00 -> $FFFF2000
 	lea	(IPX_unk_0F00).l,a0
 	move.w	#$0440-1,d7
 .loop:	move.l	#0,(a0)+
@@ -264,7 +264,7 @@ IPX_BadEnding:
 	move.b	#0,(IPX_unk_0F24).l
 	move.w	#bad_ending_file,d0
 	bsr.w	IPX_LoadAndRunFile
-	tst.b	(IPX_static_unk_0BE3).l
+	tst.b	(IPX_static_LoopVideoFlag).l
 	bmi.s	IPX_BadEnding
 	rts
 ; -----------------------------------------------------------------------------
@@ -273,7 +273,7 @@ IPX_GoodEnding:
 	move.b	#$7F,(IPX_unk_0F24).l
 	move.w	#good_ending_file,d0
 	bsr.w	IPX_LoadAndRunFile
-	tst.b	(IPX_static_unk_0BE3).l
+	tst.b	(IPX_static_LoopVideoFlag).l
 	bmi.s	IPX_GoodEnding
 	rts
 ; -----------------------------------------------------------------------------
@@ -290,7 +290,7 @@ IPX_CleanupOnGameOver:
 	rts
 ; -----------------------------------------------------------------------------
 ; RAM variables in between executed code. Looks like some static variables...
-; They shall stay at their exact address because they are referenced by other MMD files which
+; They shall stay at their exact address because they are referenced by other files which
 ; are not disassembled yet!
 	if * > $13FDCCA
 		fatal "IPX___.MMD RAM variables at $03CA-$03CB are erased! $\{*} > $13FDCCA"
@@ -790,7 +790,7 @@ IPX_SS6_Demo:
 IPX_IntroVideo:
 	move.w	#intro_video_file,d0
 	bsr.w	IPX_LoadAndRunFile
-	tst.b	(IPX_static_unk_0BE3).l
+	tst.b	(IPX_static_LoopVideoFlag).l
 	bmi.s	IPX_IntroVideo
 	rts
 ; -----------------------------------------------------------------------------
@@ -887,7 +887,7 @@ IPX_Video_Intro:
 	move.w	#intro_video_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_static_unk_0BE3).l
+	tst.b	(IPX_static_LoopVideoFlag).l
 	bmi.s	IPX_Video_Intro
 	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
@@ -900,7 +900,7 @@ IPX_Video_PencilTest:
 	move.w	#pencil_test_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_static_unk_0BE3).l
+	tst.b	(IPX_static_LoopVideoFlag).l
 	bmi.s	IPX_Video_PencilTest
 	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
@@ -910,7 +910,7 @@ IPX_Video_GoodEnding:
 	move.w	#good_ending_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_static_unk_0BE3).l
+	tst.b	(IPX_static_LoopVideoFlag).l
 	bmi.s	IPX_Video_GoodEnding
 
 	move.w	#player_name_file,d0
@@ -923,7 +923,7 @@ IPX_Video_BadEnding:
 	move.w	#bad_ending_file,d0
 	bsr.w	IPX_LoadAndRunFile
 
-	tst.b	(IPX_static_unk_0BE3).l
+	tst.b	(IPX_static_LoopVideoFlag).l
 	bmi.s	IPX_Video_BadEnding
 	bra.s	IPX_VisualMode
 ; -----------------------------------------------------------------------------
@@ -989,13 +989,15 @@ IPX_TimeAttack_SpecialStage:
 	bsr.w	IPX_LoadAndRunFile
 	bra.w	IPX_TimeAttack
 ; -----------------------------------------------------------------------------
+; Load a file from the CD-ROM.
+; Load the code into 68K RAM (at $FFFF2000), and run it.
 ;IPX_loc_AF8:
 IPX_LoadAndRunFile:
 	move.l	a0,-(sp)
 	move.w	d0,(IO_unk_A12010).l
 
-	; Erases $36C0 bytes starting at $2000.
-	; $2000 -> $56C0
+	; Erases $36C0 bytes starting at $FFFF2000.
+	; $FFFF2000 -> $FFFF56C0
 	lea	(IPX_unk_2000).l,a1
 	moveq	#0,d0
 	move.w	#$0DB0-1,d7
@@ -1006,28 +1008,29 @@ IPX_LoadAndRunFile:
 	dbf	d7,.loop1
 	bsr.w	IPX_loc_D10
 
-	move.l	(MMD_unk_200008).l,d0
-	beq.w	IPX_loc_BDE
+	move.l	(MMD_CodeStartAddr).l,d0
+	beq.w	IPX_loc_BDE ; Jump if no code is associated to the file
 	movea.l	d0,a0
 
-	move.l	(MMD_unk_200002).l,d0
-	beq.s	IPX_loc_B44
+	move.l	(MMD_CodeLoadAddr).l,d0
+	beq.s	IPX_loc_B44 ; Jump if code doesn't need any load into memory
 	movea.l	d0,a2
 
-	lea	(MMD_unk_200100).l,a1
-	move.w	(MMD_unk_200006).l,d7
+	; Load the code at the specified address in memory.
+	lea	(MMD_CodeLocationInFile).l,a1
+	move.w	(MMD_CodeSize).l,d7
 .loop2	move.l	(a1)+,(a2)+
 	dbf	d7,.loop2
 
 IPX_loc_B44:
 	move.w	sr,-(sp)
-	move.l	(MMD_unk_20000C).l,d0
-	beq.s	IPX_loc_B52
+	move.l	(MMD_CodeHIntAddr).l,d0
+	beq.s	IPX_loc_B52 ; Jump if there is no H-Int function.
 	move.l	d0,(H_Int_addr).w
 
 IPX_loc_B52:
-	move.l	(MMD_unk_200010).l,d0
-	beq.s	IPX_loc_B5E
+	move.l	(MMD_CodeVIntAddr).l,d0
+	beq.s	IPX_loc_B5E ; Jump if there is no V-Int function.
 	move.l	d0,(V_Int_addr).w
 
 IPX_loc_B5E:
@@ -1052,19 +1055,20 @@ IPX_loc_B86:
 	move.w	(IO_unk_A12020).l,d0
 	bne.s	IPX_loc_B86
 
+	; Dynamic call to the loaded code
 	jsr	(a0)
 
-	move.b	d0,(IPX_static_unk_0BE3).l
+	move.b	d0,(IPX_static_LoopVideoFlag).l
 	bsr.w	IPX_loc_D30
 
 	move.b	#$E0,(IO_unk_A01C0A).l
 	bsr.w	IPX_loc_D4E
 
 	move.b	#0,(IPX_unk_0F00).l
-	move.l	#IPX_int_C06-IPX_Start+IPX_RAM_Start,(H_Int_addr).w
-	move.l	#IPX_int_BE4-IPX_Start+IPX_RAM_Start,(V_Int_addr).w
+	move.l	#IPX_H_Int-IPX_Start+IPX_RAM_Start,(H_Int_addr).w
+	move.l	#IPX_V_Int-IPX_Start+IPX_RAM_Start,(V_Int_addr).w
 	move.w	#$8134,(IPX_unk_0F16).l
-	bset	#0,(IPX_unk_0BE2).l
+	bset	#0,(IPX_static_unk_0BE2).l
 	bsr.w	IPX_loc_D5E
 	bsr.w	IPX_loc_D1C
 
@@ -1072,32 +1076,43 @@ IPX_loc_BDE:
 	movea.l	(sp)+,a0
 	rts
 ; -----------------------------------------------------------------------------
-; RAM variables inside executed code
-IPX_RAM_0BE2:	dc.b	0
-IPX_RAM_0BE3:	dc.b	0
-; -----------------------------------------------------------------------------
+; RAM variables in between executed code. Looks like some static variables...
+; They shall stay at their exact address because they are referenced by other files which
+; are not disassembled yet!
+	if * > $13FE4E2
+		fatal "IPX___.MMD RAM variables at $0BE2-$0BE3 are erased! $\{*} > $13FE4E2"
+	endif
+	org	$13FE4E2
 
-IPX_int_BE4:
+IPX_RAM_0BE2:	dc.b	0 ; IPX_static_unk_0BE2
+IPX_RAM_0BE3:	dc.b	0 ; IPX_static_LoopVideoFlag
+; -----------------------------------------------------------------------------
+; Vertical interrupt function.
+;IPX_int_BE4:
+IPX_V_Int:
 	bset	#0,(IO_unk_A12000).l
 	bclr	#0,(IPX_unk_0F00).l
-	bclr	#0,(IPX_unk_0BE2).l
-	beq.s	IPX_int_C06
+	bclr	#0,(IPX_static_unk_0BE2).l
+	beq.s	IPX_H_Int
 	move.w	#$8134,(VDP_control_port).l
 
-IPX_int_C06:
+; Horizontal interrupt function (do nothing).
+;IPX_int_C07:
+IPX_H_Int:
 	rte
 ; -----------------------------------------------------------------------------
+; Load saved data from BRAM.
 ;IPX_loc_C08:
 IPX_LoadSavedData:
 	bsr.w	IPX_loc_C58
 
-	move.w	(MMD_unk_2002A4).l,(IPX_CurrentZoneInSave).l
-	move.b	(MMD_unk_2002A7).l,(IPX_GoodFuture_Array).l
-	move.b	(MMD_unk_2002A8).l,(IPX_unk_0F1D).l
-	move.b	(MMD_unk_2002A5).l,(IPX_unk_0F18).l
-	move.b	(MMD_unk_2002A6).l,(IPX_unk_0F19).l
-	move.b	(MMD_unk_2002AC).l,(IPX_NextSpecialStage).l
-	move.b	(MMD_unk_2002AD).l,(IPX_TimeStones_Array).l
+	move.w	(BRAM_CurrentZone).l,(IPX_CurrentZoneInSave).l
+	move.b	(BRAM_GoodFuture_Array).l,(IPX_GoodFuture_Array).l
+	move.b	(BRAM_unk_2002A8).l,(IPX_unk_0F1D).l
+	move.b	(BRAM_unk_2002A5).l,(IPX_unk_0F18).l
+	move.b	(BRAM_unk_2002A6).l,(IPX_unk_0F19).l
+	move.b	(BRAM_NextSpecialStage).l,(IPX_NextSpecialStage).l
+	move.b	(BRAM_TimeStones_Array).l,(IPX_TimeStones_Array).l
 	bsr.w	IPX_loc_D1C
 	rts
 ; -----------------------------------------------------------------------------
@@ -1105,10 +1120,10 @@ IPX_LoadSavedData:
 IPX_loc_C58:
 	bsr.w	IPX_loc_D1C
 
-	move.w	#$8B,d0
+	move.w	#unk_file_8B,d0
 	btst	#0,(IPX_unk_0F1F).l
 	bne.s	IPX_loc_C6E
-	move.w	#$87,d0
+	move.w	#unk_file_87,d0
 
 IPX_loc_C6E:
 	bsr.w	IPX_loc_CE0
@@ -1118,13 +1133,13 @@ IPX_loc_C6E:
 IPX_SaveData:
 	bsr.s	IPX_loc_C58
 
-	move.w	(IPX_CurrentZoneInSave).l,(MMD_unk_2002A4).l
-	move.b	(IPX_GoodFuture_Array).l,(MMD_unk_2002A7).l
-	move.b	(IPX_unk_0F1D).l,(MMD_unk_2002A8).l
-	move.b	(IPX_unk_0F18).l,(MMD_unk_2002A5).l
-	move.b	(IPX_unk_0F19).l,(MMD_unk_2002A6).l
-	move.b	(IPX_NextSpecialStage).l,(MMD_unk_2002AC).l
-	move.b	(IPX_TimeStones_Array).l,(MMD_unk_2002AD).l
+	move.w	(IPX_CurrentZoneInSave).l,(BRAM_CurrentZone).l
+	move.b	(IPX_GoodFuture_Array).l,(BRAM_GoodFuture_Array).l
+	move.b	(IPX_unk_0F1D).l,(BRAM_unk_2002A8).l
+	move.b	(IPX_unk_0F18).l,(BRAM_unk_2002A5).l
+	move.b	(IPX_unk_0F19).l,(BRAM_unk_2002A6).l
+	move.b	(IPX_NextSpecialStage).l,(BRAM_NextSpecialStage).l
+	move.b	(IPX_TimeStones_Array).l,(BRAM_TimeStones_Array).l
 	bsr.w	IPX_loc_D1C
 
 	move.w	#$8C,d0
@@ -1215,8 +1230,15 @@ IPX_loc_D94:
 	bne.s	IPX_loc_D94
 	rts
 ; -----------------------------------------------------------------------------
-; RAM variable inside executed code
-IPX_RAM_0DA6:	dc.w	0
+; RAM variable in between executed code. Looks like some static variable...
+; It shall stay at its exact address because it is referenced by other files which
+; are not disassembled yet!
+	if * > $13FE6A6
+		fatal "IPX___.MMD RAM variable at $0DA6 is erased! $\{*} > $13FE6A6"
+	endif
+	org	$13FE6A6
+
+IPX_RAM_0DA6:	dc.w	0 ; IPX_static_unk_0DA6
 ; -----------------------------------------------------------------------------
 ; Dead code?
 ;IPX_loc_DA8:
