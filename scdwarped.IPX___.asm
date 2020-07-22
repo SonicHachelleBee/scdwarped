@@ -1490,14 +1490,13 @@ IPX_RandomTimeZone_WarpingFromPast:
 	rts
 ; -----------------------------------------------------------------------------
 ; RAM variables in between executed code for the Sonic CD Warped hack.
-	if * > $13FE7FA
-		fatal "IPX___.MMD RAM variables at $0EFA-$0EFF are erased! $\{*} > $13FE7FA"
+	if * > $13FE7FB
+		fatal "IPX___.MMD RAM variables at $0EFB-$0EFF are erased! $\{*} > $13FE7FB"
 	endif
-	org	$13FE7FA
+	org	$13FE7FB
 
-IPX_RAM_0EFA:	dc.w	0 ; IPX_EggMachine_ActFlag
-IPX_RAM_0EFC:	dc.b	0 ; IPX_EggMachine_ZoneFlags
-		dc.b	0 ; Free byte
+IPX_RAM_0EFB:	dc.b	0 ; IPX_EggMachine_ActFlag
+IPX_RAM_0EFC:	dc.w	0 ; IPX_EggMachine_ZoneFlags
 IPX_RAM_0EFE:	dc.b	0 ; IPX_PreviousTimeZone
 IPX_RAM_0EFF:	dc.b	0 ; IPX_PreviousGameMode
 
@@ -1507,3 +1506,4 @@ IPX_End:
 	if IPX_End-IPX_Start > $F00 ; Maximum code size allowed for this file.
 		fatal "IPX___.MMD maximum code size reached! (> $F00)"
 	endif
+	org	$13FE800

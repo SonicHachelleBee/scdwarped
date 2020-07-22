@@ -1251,3 +1251,4 @@ IPX_End:
 	if IPX_End-IPX_Start > $F00 ; Maximum code size allowed for this file.
 		fatal "IPX___.MMD maximum code size reached! (> $F00)"
 	endif
+	org	$13FE800

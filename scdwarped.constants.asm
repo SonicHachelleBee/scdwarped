@@ -178,6 +178,7 @@ comin_soon_file =	$D8
 ; RAM variables - General
 
 RAM_Start =			$FFFF0000
+WarpTimeCounter =		$FFFFF786 ; 2 bytes. Counter of time needed before warping.
 V_Int_addr =			$FFFFFD08 ; 4 bytes
 H_Int_addr =			$FFFFFD0E ; 4 bytes
 FramesCounter =			$FFFFFA44 ; Used in title screen, special stages, but NOT in levels
@@ -197,7 +198,7 @@ IPX_static_LoopVideoFlag =	$00FF0BE3
 IPX_static_unk_0DA6 =		$00FF0DA6
 
 ; RAM variables only for Sonic CD Warped
-IPX_EggMachine_ActFlag =	$00FF0EFA ; For the current act only. Bit 0 is set when the Eggman machine
+IPX_EggMachine_ActFlag =	$00FF0EFB ; For the current act only. Bit 0 is set when the Eggman machine
 				          ; was destroyed, and the player exits the past time zone
 					  ; (or finish the act).
 IPX_EggMachine_ZoneFlags =	$00FF0EFC ; Array of Eggman machine flags for the current zone only:
