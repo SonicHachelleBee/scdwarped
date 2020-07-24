@@ -504,13 +504,17 @@ warp_time_macro2 macro addressJE, addressU
 	warp_time_macro2  $1060352, $10602D6
 	warp_time_macro3  $1060364, $10602E8
 	warp_time_macro4  $10603B8, $106033C
-	score_tally_macro $10675F6, $1067568
+	; There is a specific condition that tests for SSZ3.
+	; So, this is not the usual address to edit in the score tally object.
+	score_tally_macro $10675DC, $106754E
 	; SSZ3 bad future
 	warp_time_macro1  $10A0016, $10A001A
 	warp_time_macro2  $10A02E0, $10A02E4
 	warp_time_macro3  $10A02F2, $10A02F6
 	warp_time_macro4  $10A0346, $10A034A
-	score_tally_macro $10A7584, $10A7576
+	; There is a specific condition that tests for SSZ3.
+	; So, this is not the usual address to edit in the score tally object.
+	score_tally_macro $10A756A, $10A755C
 
 	; MMZ1 present
 	warp_time_macro1  $10DFDC4, $10DFDC8
